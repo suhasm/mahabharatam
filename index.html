@@ -520,6 +520,11 @@
             letter-spacing: 0.5px;
         }
 
+        .saved-icons {
+            font-size: 12px;
+            margin-right: 4px;
+        }
+
         .bookmark-note {
             font-size: 13px;
             color: var(--text-secondary);
@@ -1101,11 +1106,7 @@
         </button>
         <button class="nav-btn" id="navBookmarks">
             <span class="icon">📝</span>
-            <span>Notes</span>
-        </button>
-        <button class="nav-btn" id="navFavorites">
-            <span class="icon">💐</span>
-            <span>Favorites</span>
+            <span>Saved</span>
         </button>
     </nav>
 
@@ -1183,24 +1184,14 @@
         </div>
     </aside>
 
-    <!-- Notes panel -->
+    <!-- Saved items panel (Notes + Favorites) -->
     <div class="sidebar-overlay" id="bookmarkOverlay"></div>
     <aside class="bookmarks-panel" id="bookmarksPanel">
         <div class="sidebar-header">
-            <h2>Notes</h2>
+            <h2>Saved</h2>
             <button class="icon-btn" id="closeBookmarks">✕</button>
         </div>
         <div id="bookmarksList"></div>
-    </aside>
-
-    <!-- Favorites panel -->
-    <div class="sidebar-overlay" id="favoritesOverlay"></div>
-    <aside class="bookmarks-panel" id="favoritesPanel">
-        <div class="sidebar-header">
-            <h2>💐 Favorites</h2>
-            <button class="icon-btn" id="closeFavorites">✕</button>
-        </div>
-        <div id="favoritesList"></div>
     </aside>
 
     <!-- Note modal -->
@@ -1707,19 +1698,74 @@
 
         function renderBookmarks() {
             const list = document.getElementById('bookmarksList');
-            if (state.bookmarks.length === 0) {
-                list.innerHTML = '<p style="padding: 16px; color: var(--text-secondary);">No notes yet.</p>';
+
+            // Combine notes and favorites into one list
+            const allLocations = new Set([
+                ...state.bookmarks.map(b => b.location),
+                ...state.favorites
+            ]);
+
+            if (allLocations.size === 0) {
+                list.innerHTML = '<p style="padding: 16px; color: var(--text-secondary);">No saved items yet. Add notes (📝) or favorites (💐) from any verse.</p>';
                 return;
             }
 
-            const sorted = [...state.bookmarks].sort((a, b) => b.timestamp - a.timestamp);
-            list.innerHTML = sorted.map(bookmark => `
+            // Build combined list with metadata
+            const items = Array.from(allLocations).map(location => {
+                const bookmark = state.bookmarks.find(b => b.location === location);
+                const isFavorite = state.favorites.includes(location);
+                return {
+                    location,
+                    note: bookmark?.note || null,
+                    isNote: !!bookmark,
+                    isFavorite,
+                    timestamp: bookmark?.timestamp || 0
+                };
+            });
+
+            // Sort by chapter/verse order
+            items.sort((a, b) => {
+                const [chA, vA] = a.location.split(':');
+                const [chB, vB] = b.location.split(':');
+                if (chA !== chB) return chA.localeCompare(chB, undefined, { numeric: true });
+                return parseInt(vA) - parseInt(vB);
+            });
+
+            list.innerHTML = items.map(item => {
+                const icons = `${item.isFavorite ? '💐' : ''}${item.isNote ? '📝' : ''}`;
+                return `
                 <div class="bookmark-item">
-                    <span class="bookmark-delete" onclick="event.stopPropagation(); deleteBookmark('${bookmark.location}')">✕</span>
-                    <div class="bookmark-location" onclick="goToBookmark('${bookmark.location}')">${bookmark.location}</div>
-                    ${bookmark.note ? `<div class="bookmark-note">${bookmark.note}</div>` : ''}
+                    <span class="bookmark-delete" onclick="event.stopPropagation(); removeSavedItem('${item.location}')">✕</span>
+                    <div class="bookmark-location" onclick="goToBookmark('${item.location}')">
+                        <span class="saved-icons">${icons}</span> ${item.location}
+                    </div>
+                    ${item.note ? `<div class="bookmark-note">${item.note}</div>` : ''}
                 </div>
-            `).join('');
+            `}).join('');
+        }
+
+        function removeSavedItem(location) {
+            // Remove from both notes and favorites
+            const hadNote = state.bookmarks.some(b => b.location === location);
+            const hadFavorite = state.favorites.includes(location);
+
+            state.bookmarks = state.bookmarks.filter(b => b.location !== location);
+            state.favorites = state.favorites.filter(f => f !== location);
+
+            scheduleSyncToGist();
+            showToast('Removed from saved');
+            updateStats();
+            renderBookmarks();
+
+            // Update icons if verse is visible
+            if (hadNote) {
+                const noteIcon = document.querySelector(`[data-verse-id="${location}"] .verse-bookmark`);
+                if (noteIcon) noteIcon.classList.remove('active');
+            }
+            if (hadFavorite) {
+                const favIcon = document.querySelector(`[data-verse-id="${location}"] .verse-favorite`);
+                if (favIcon) favIcon.classList.remove('active');
+            }
         }
 
         function deleteBookmark(location) {
@@ -1778,70 +1824,6 @@
                     setTimeout(() => el.style.boxShadow = '', 1500);
                 }
             }, 100);
-        }
-
-        // Favorites panel functions
-        function renderFavorites() {
-            const list = document.getElementById('favoritesList');
-            if (state.favorites.length === 0) {
-                list.innerHTML = '<p style="padding: 16px; color: var(--text-secondary);">No favorites yet. Tap the 💐 icon on any verse to add it.</p>';
-                return;
-            }
-
-            // Sort by chapter order
-            const sorted = [...state.favorites].sort((a, b) => {
-                const [chA, vA] = a.split(':');
-                const [chB, vB] = b.split(':');
-                if (chA !== chB) return chA.localeCompare(chB, undefined, { numeric: true });
-                return parseInt(vA) - parseInt(vB);
-            });
-
-            list.innerHTML = sorted.map(location => `
-                <div class="bookmark-item">
-                    <span class="bookmark-delete" onclick="event.stopPropagation(); removeFavoriteFromPanel('${location}')">✕</span>
-                    <div class="bookmark-location" onclick="goToFavorite('${location}')">${location}</div>
-                </div>
-            `).join('');
-        }
-
-        function removeFavoriteFromPanel(location) {
-            state.favorites = state.favorites.filter(f => f !== location);
-            scheduleSyncToGist();
-            showToast('Removed from favorites');
-            updateStats();
-            renderFavorites();
-
-            // Update icon if verse is visible
-            const icon = document.querySelector(`[data-verse-id="${location}"] .verse-favorite`);
-            if (icon) icon.classList.remove('active');
-        }
-
-        async function goToFavorite(location) {
-            closeFavoritesPanel();
-            const [chapter, verse] = location.split(':');
-            const [book] = chapter.split('.');
-            state.currentBook = state.allBooks.find(b => b.number == book);
-            await navigateToChapter(chapter);
-
-            setTimeout(() => {
-                const el = document.querySelector(`[data-verse-id="${location}"]`);
-                if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    el.style.boxShadow = '0 0 0 3px var(--accent)';
-                    setTimeout(() => el.style.boxShadow = '', 1500);
-                }
-            }, 100);
-        }
-
-        function openFavoritesPanel() {
-            renderFavorites();
-            document.getElementById('favoritesPanel').classList.add('open');
-            document.getElementById('favoritesOverlay').classList.add('visible');
-        }
-
-        function closeFavoritesPanel() {
-            document.getElementById('favoritesPanel').classList.remove('open');
-            document.getElementById('favoritesOverlay').classList.remove('visible');
         }
 
         // Navigation
@@ -2033,13 +2015,9 @@
             document.getElementById('closeSidebar').addEventListener('click', closeSidebar);
             sidebarOverlay.addEventListener('click', closeSidebar);
 
-            // Bookmarks
+            // Saved panel (Notes + Favorites)
             document.getElementById('closeBookmarks').addEventListener('click', closeBookmarksPanel);
             bookmarkOverlay.addEventListener('click', closeBookmarksPanel);
-
-            // Favorites
-            document.getElementById('closeFavorites').addEventListener('click', closeFavoritesPanel);
-            document.getElementById('favoritesOverlay').addEventListener('click', closeFavoritesPanel);
 
             // Modal
             document.getElementById('closeModal').addEventListener('click', () => noteModal.classList.remove('visible'));
@@ -2067,11 +2045,6 @@
                 document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
                 document.getElementById('navBookmarks').classList.add('active');
                 openBookmarksPanel();
-            });
-            document.getElementById('navFavorites').addEventListener('click', () => {
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById('navFavorites').classList.add('active');
-                openFavoritesPanel();
             });
 
             // Settings
@@ -2611,8 +2584,7 @@
         window.goToBookmark = goToBookmark;
         window.deleteBookmark = deleteBookmark;
         window.goToRecentChapter = goToRecentChapter;
-        window.goToFavorite = goToFavorite;
-        window.removeFavoriteFromPanel = removeFavoriteFromPanel;
+        window.removeSavedItem = removeSavedItem;
 
         // Start
         init();
