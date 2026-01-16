@@ -894,6 +894,45 @@
             border-color: rgba(201, 162, 39, 0.3);
         }
 
+        /* Chapter-level actions */
+        .chapter-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .chapter-action-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chapter-action-btn:hover {
+            background: var(--accent-glow);
+            border-color: rgba(201, 162, 39, 0.3);
+            color: var(--text-primary);
+        }
+
+        .chapter-action-btn.active {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .chapter-saved-icons {
+            font-size: 12px;
+            margin-left: 8px;
+            opacity: 0.9;
+        }
+
         /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 6px;
@@ -1178,6 +1217,9 @@
             <p style="font-size: 14px; color: var(--text-secondary); margin-top: 12px;">
                 <span id="bookmarkCount">0</span> notes · <span id="favoriteCount">0</span> 💐 favorites
             </p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                <span id="chapterNoteCount">0</span> chapter notes · <span id="chapterFavoriteCount">0</span> chapter 💐
+            </p>
         </div>
 
         <div class="sidebar-section">
@@ -1232,6 +1274,9 @@
             highlights: JSON.parse(localStorage.getItem('mb_highlights2') || '{}'),
             bookmarks: JSON.parse(localStorage.getItem('mb_bookmarks') || '[]'),
             favorites: JSON.parse(localStorage.getItem('mb_favorites') || '[]'),
+            // Chapter-level notes and favorites (stored separately to avoid confusion)
+            chapterNotes: JSON.parse(localStorage.getItem('mb_chapter_notes') || '[]'),
+            chapterFavorites: JSON.parse(localStorage.getItem('mb_chapter_favorites') || '[]'),
             recentChapters: JSON.parse(localStorage.getItem('mb_recent_chapters') || '[]'),
             fontSize: parseInt(localStorage.getItem('mb_fontSize') || '20'),
             selectedRange: null,
@@ -1396,10 +1441,34 @@
                         <h2>${state.currentBook.name}</h2>
                     </div>
                     ${bookChapters.map(chapter => {
-                        const hasBookmark = state.bookmarks.some(b => b.location.startsWith(chapter.number));
+                        const hasVerseBookmark = state.bookmarks.some(b => b.location.startsWith(chapter.number + ':'));
+                        const hasChapterNote = state.chapterNotes.some(n => n.chapter === chapter.number);
+                        const isChapterFavorite = state.chapterFavorites.includes(chapter.number);
+
+                        // Build icons for chapter-level saved items
+                        let chapterIcons = '';
+                        if (isChapterFavorite) chapterIcons += '💐';
+                        if (hasChapterNote) chapterIcons += '📝';
+                        if (hasVerseBookmark && !hasChapterNote) chapterIcons += '★';
+
                         return `
-                            <div class="chapter-card" onclick="navigateToChapter('${chapter.number}')">
-                                <div class="chapter-number">अध्यायः ${chapter.number}${hasBookmark ? ' ★' : ''}</div>
+                            <div class="chapter-card" data-chapter="${chapter.number}">
+                                <div class="chapter-number" onclick="navigateToChapter('${chapter.number}')">
+                                    अध्यायः ${chapter.number}
+                                    ${chapterIcons ? `<span class="chapter-saved-icons">${chapterIcons}</span>` : ''}
+                                </div>
+                                <div class="chapter-actions">
+                                    <button class="chapter-action-btn ${isChapterFavorite ? 'active' : ''}"
+                                            onclick="event.stopPropagation(); toggleChapterFavorite('${chapter.number}')"
+                                            title="Mark chapter as favorite">
+                                        💐 Favorite
+                                    </button>
+                                    <button class="chapter-action-btn ${hasChapterNote ? 'active' : ''}"
+                                            onclick="event.stopPropagation(); toggleChapterNote('${chapter.number}')"
+                                            title="Add note to chapter">
+                                        📝 Note
+                                    </button>
+                                </div>
                             </div>
                         `;
                     }).join('')}
@@ -1686,38 +1755,63 @@
             const note = document.getElementById('noteText').value.trim();
             const verseId = state.selectedVerseId;
 
-            state.bookmarks = state.bookmarks.filter(b => b.location !== verseId);
-            state.bookmarks.push({ location: verseId, note, timestamp: Date.now() });
+            // Check if this is a chapter note or verse note
+            if (verseId.startsWith('chapter:')) {
+                const chapterNum = verseId.replace('chapter:', '');
+                state.chapterNotes = state.chapterNotes.filter(n => n.chapter !== chapterNum);
+                state.chapterNotes.push({ chapter: chapterNum, note, timestamp: Date.now() });
 
-            scheduleSyncToGist(); // Save locally and schedule cloud sync
-            noteModal.classList.remove('visible');
-            showToast('Note saved');
-            updateStats();
+                scheduleSyncToGist();
+                noteModal.classList.remove('visible');
+                showToast('Chapter note saved');
+                updateStats();
 
-            const icon = document.querySelector(`[data-verse-id="${verseId}"] .verse-bookmark`);
-            if (icon) icon.classList.add('active');
+                // Update the button and icons in UI
+                const btn = document.querySelector(`[data-chapter="${chapterNum}"] .chapter-action-btn:last-child`);
+                if (btn) btn.classList.add('active');
+                updateChapterIcons(chapterNum);
+            } else {
+                // Regular verse note
+                state.bookmarks = state.bookmarks.filter(b => b.location !== verseId);
+                state.bookmarks.push({ location: verseId, note, timestamp: Date.now() });
+
+                scheduleSyncToGist();
+                noteModal.classList.remove('visible');
+                showToast('Note saved');
+                updateStats();
+
+                const icon = document.querySelector(`[data-verse-id="${verseId}"] .verse-bookmark`);
+                if (icon) icon.classList.add('active');
+            }
         }
 
         function renderBookmarks() {
             const list = document.getElementById('bookmarksList');
 
-            // Combine notes and favorites into one list
-            const allLocations = new Set([
+            // Combine verse notes, verse favorites, chapter notes, and chapter favorites
+            const allVerseLocations = new Set([
                 ...state.bookmarks.map(b => b.location),
                 ...state.favorites
             ]);
 
-            if (allLocations.size === 0) {
-                list.innerHTML = '<p style="padding: 16px; color: var(--text-secondary);">No saved items yet. Add notes (📝) or favorites (💐) from any verse.</p>';
+            const allChapterLocations = new Set([
+                ...state.chapterNotes.map(n => n.chapter),
+                ...state.chapterFavorites
+            ]);
+
+            if (allVerseLocations.size === 0 && allChapterLocations.size === 0) {
+                list.innerHTML = '<p style="padding: 16px; color: var(--text-secondary);">No saved items yet. Add notes (📝) or favorites (💐) from any verse or chapter.</p>';
                 return;
             }
 
-            // Build combined list with metadata
-            const items = Array.from(allLocations).map(location => {
+            // Build combined list with metadata - verse items
+            const verseItems = Array.from(allVerseLocations).map(location => {
                 const bookmark = state.bookmarks.find(b => b.location === location);
                 const isFavorite = state.favorites.includes(location);
                 return {
+                    type: 'verse',
                     location,
+                    displayLocation: location,
                     note: bookmark?.note || null,
                     isNote: !!bookmark,
                     isFavorite,
@@ -1725,25 +1819,84 @@
                 };
             });
 
+            // Build combined list with metadata - chapter items
+            const chapterItems = Array.from(allChapterLocations).map(chapter => {
+                const chapterNote = state.chapterNotes.find(n => n.chapter === chapter);
+                const isFavorite = state.chapterFavorites.includes(chapter);
+                return {
+                    type: 'chapter',
+                    location: chapter,
+                    displayLocation: `अध्यायः ${chapter}`,
+                    note: chapterNote?.note || null,
+                    isNote: !!chapterNote,
+                    isFavorite,
+                    timestamp: chapterNote?.timestamp || 0
+                };
+            });
+
+            // Combine all items
+            const items = [...verseItems, ...chapterItems];
+
             // Sort by chapter/verse order
             items.sort((a, b) => {
-                const [chA, vA] = a.location.split(':');
-                const [chB, vB] = b.location.split(':');
+                // Parse the location to get chapter numbers
+                const getChapterNum = (item) => {
+                    if (item.type === 'chapter') return item.location;
+                    return item.location.split(':')[0];
+                };
+                const getVerseNum = (item) => {
+                    if (item.type === 'chapter') return 0; // Chapters come first within same chapter
+                    return parseInt(item.location.split(':')[1]) || 0;
+                };
+
+                const chA = getChapterNum(a);
+                const chB = getChapterNum(b);
+
                 if (chA !== chB) return chA.localeCompare(chB, undefined, { numeric: true });
-                return parseInt(vA) - parseInt(vB);
+
+                // Same chapter: chapter-level items come before verse items
+                if (a.type !== b.type) return a.type === 'chapter' ? -1 : 1;
+
+                return getVerseNum(a) - getVerseNum(b);
             });
 
             list.innerHTML = items.map(item => {
                 const icons = `${item.isFavorite ? '💐' : ''}${item.isNote ? '📝' : ''}`;
+                const isChapter = item.type === 'chapter';
+                const clickHandler = isChapter
+                    ? `goToChapterFromSaved('${item.location}')`
+                    : `goToBookmark('${item.location}')`;
+                const removeHandler = isChapter
+                    ? `removeChapterSavedItem('${item.location}')`
+                    : `removeSavedItem('${item.location}')`;
+
                 return `
                 <div class="bookmark-item">
-                    <span class="bookmark-delete" onclick="event.stopPropagation(); removeSavedItem('${item.location}')">✕</span>
-                    <div class="bookmark-location" onclick="goToBookmark('${item.location}')">
-                        <span class="saved-icons">${icons}</span> ${item.location}
+                    <span class="bookmark-delete" onclick="event.stopPropagation(); ${removeHandler}">✕</span>
+                    <div class="bookmark-location" onclick="${clickHandler}">
+                        <span class="saved-icons">${icons}</span> ${item.displayLocation}
                     </div>
                     ${item.note ? `<div class="bookmark-note">${item.note}</div>` : ''}
                 </div>
             `}).join('');
+        }
+
+        function removeChapterSavedItem(chapter) {
+            // Remove from both chapter notes and chapter favorites
+            state.chapterNotes = state.chapterNotes.filter(n => n.chapter !== chapter);
+            state.chapterFavorites = state.chapterFavorites.filter(f => f !== chapter);
+
+            scheduleSyncToGist();
+            showToast('Chapter removed from saved');
+            updateStats();
+            renderBookmarks();
+        }
+
+        async function goToChapterFromSaved(chapter) {
+            closeBookmarksPanel();
+            const [bookNum] = chapter.split('.');
+            state.currentBook = state.allBooks.find(b => b.number == bookNum);
+            await navigateToChapter(chapter);
         }
 
         function removeSavedItem(location) {
@@ -1780,15 +1933,32 @@
 
         function deleteNoteFromModal() {
             const verseId = state.selectedVerseId;
-            state.bookmarks = state.bookmarks.filter(b => b.location !== verseId);
-            scheduleSyncToGist();
-            noteModal.classList.remove('visible');
-            showToast('Note deleted');
-            updateStats();
 
-            // Update icon
-            const icon = document.querySelector(`[data-verse-id="${verseId}"] .verse-bookmark`);
-            if (icon) icon.classList.remove('active');
+            // Check if this is a chapter note or verse note
+            if (verseId.startsWith('chapter:')) {
+                const chapterNum = verseId.replace('chapter:', '');
+                state.chapterNotes = state.chapterNotes.filter(n => n.chapter !== chapterNum);
+                scheduleSyncToGist();
+                noteModal.classList.remove('visible');
+                showToast('Chapter note deleted');
+                updateStats();
+
+                // Update the button and icons in UI
+                const btn = document.querySelector(`[data-chapter="${chapterNum}"] .chapter-action-btn:last-child`);
+                if (btn) btn.classList.remove('active');
+                updateChapterIcons(chapterNum);
+            } else {
+                // Regular verse note
+                state.bookmarks = state.bookmarks.filter(b => b.location !== verseId);
+                scheduleSyncToGist();
+                noteModal.classList.remove('visible');
+                showToast('Note deleted');
+                updateStats();
+
+                // Update icon
+                const icon = document.querySelector(`[data-verse-id="${verseId}"] .verse-bookmark`);
+                if (icon) icon.classList.remove('active');
+            }
         }
 
         // Favorite functions
@@ -1809,6 +1979,81 @@
             // Update icon
             const icon = document.querySelector(`[data-verse-id="${verseId}"] .verse-favorite`);
             if (icon) icon.classList.toggle('active');
+        }
+
+        // Chapter-level favorite functions
+        function toggleChapterFavorite(chapterNum) {
+            const idx = state.chapterFavorites.indexOf(chapterNum);
+
+            if (idx >= 0) {
+                state.chapterFavorites.splice(idx, 1);
+                showToast('Chapter removed from favorites');
+            } else {
+                state.chapterFavorites.push(chapterNum);
+                showToast('Chapter added to favorites 💐');
+            }
+
+            scheduleSyncToGist();
+            updateStats();
+
+            // Update the button in UI
+            const btn = document.querySelector(`[data-chapter="${chapterNum}"] .chapter-action-btn:first-child`);
+            if (btn) btn.classList.toggle('active');
+
+            // Update chapter icons
+            updateChapterIcons(chapterNum);
+        }
+
+        // Chapter-level note functions
+        function toggleChapterNote(chapterNum) {
+            // Open the note modal for the chapter
+            openChapterNoteModal(chapterNum);
+        }
+
+        function openChapterNoteModal(chapterNum) {
+            state.selectedVerseId = `chapter:${chapterNum}`; // Use special prefix to distinguish from verses
+            document.getElementById('noteVerseRef').textContent = `अध्यायः ${chapterNum}`;
+            document.getElementById('noteText').value = '';
+
+            const existing = state.chapterNotes.find(n => n.chapter === chapterNum);
+            const deleteBtn = document.getElementById('deleteNote');
+            const modalTitle = noteModal.querySelector('.modal-header h3');
+
+            if (existing) {
+                document.getElementById('noteText').value = existing.note || '';
+                deleteBtn.style.display = 'block';
+                modalTitle.textContent = 'Edit Chapter Note';
+            } else {
+                deleteBtn.style.display = 'none';
+                modalTitle.textContent = 'Add Chapter Note';
+            }
+
+            noteModal.classList.add('visible');
+            document.getElementById('noteText').focus();
+        }
+
+        function updateChapterIcons(chapterNum) {
+            const card = document.querySelector(`[data-chapter="${chapterNum}"]`);
+            if (!card) return;
+
+            const hasChapterNote = state.chapterNotes.some(n => n.chapter === chapterNum);
+            const isChapterFavorite = state.chapterFavorites.includes(chapterNum);
+            const hasVerseBookmark = state.bookmarks.some(b => b.location.startsWith(chapterNum + ':'));
+
+            let chapterIcons = '';
+            if (isChapterFavorite) chapterIcons += '💐';
+            if (hasChapterNote) chapterIcons += '📝';
+            if (hasVerseBookmark && !hasChapterNote) chapterIcons += '★';
+
+            const iconsSpan = card.querySelector('.chapter-saved-icons');
+            if (iconsSpan) {
+                iconsSpan.textContent = chapterIcons;
+            } else if (chapterIcons) {
+                const numDiv = card.querySelector('.chapter-number');
+                if (numDiv) {
+                    numDiv.innerHTML = `अध्यायः ${chapterNum} <span class="chapter-saved-icons">${chapterIcons}</span>`;
+                }
+            }
         }
 
         async function goToBookmark(location) {
@@ -1893,6 +2138,8 @@
             document.getElementById('redCount').textContent = red;
             document.getElementById('bookmarkCount').textContent = state.bookmarks.length;
             document.getElementById('favoriteCount').textContent = state.favorites.length;
+            document.getElementById('chapterNoteCount').textContent = state.chapterNotes.length;
+            document.getElementById('chapterFavoriteCount').textContent = state.chapterFavorites.length;
         }
 
         // Recent chapters
@@ -2344,6 +2591,8 @@
                 highlights: state.highlights,
                 bookmarks: state.bookmarks,
                 favorites: state.favorites,
+                chapterNotes: state.chapterNotes,
+                chapterFavorites: state.chapterFavorites,
                 lastModified: Date.now()
             };
 
@@ -2417,11 +2666,15 @@
                         state.highlights = data.highlights || {};
                         state.bookmarks = data.bookmarks || [];
                         state.favorites = data.favorites || [];
+                        state.chapterNotes = data.chapterNotes || [];
+                        state.chapterFavorites = data.chapterFavorites || [];
 
                         // Save to localStorage
                         localStorage.setItem('mb_highlights2', JSON.stringify(state.highlights));
                         localStorage.setItem('mb_bookmarks', JSON.stringify(state.bookmarks));
                         localStorage.setItem('mb_favorites', JSON.stringify(state.favorites));
+                        localStorage.setItem('mb_chapter_notes', JSON.stringify(state.chapterNotes));
+                        localStorage.setItem('mb_chapter_favorites', JSON.stringify(state.chapterFavorites));
 
                         updateStats();
                         if (state.currentView === 'verses') {
@@ -2446,6 +2699,8 @@
             localStorage.setItem('mb_highlights2', JSON.stringify(state.highlights));
             localStorage.setItem('mb_bookmarks', JSON.stringify(state.bookmarks));
             localStorage.setItem('mb_favorites', JSON.stringify(state.favorites));
+            localStorage.setItem('mb_chapter_notes', JSON.stringify(state.chapterNotes));
+            localStorage.setItem('mb_chapter_favorites', JSON.stringify(state.chapterFavorites));
             localStorage.setItem('mb_last_local_change', Date.now().toString());
 
             if (!syncState.token || !syncState.gistId) return;
@@ -2481,6 +2736,8 @@
                 highlights: state.highlights,
                 bookmarks: state.bookmarks,
                 favorites: state.favorites,
+                chapterNotes: state.chapterNotes,
+                chapterFavorites: state.chapterFavorites,
                 lastModified: Date.now()
             };
 
@@ -2583,10 +2840,14 @@
         window.navigateToChapter = navigateToChapter;
         window.toggleBookmark = toggleBookmark;
         window.toggleFavorite = toggleFavorite;
+        window.toggleChapterFavorite = toggleChapterFavorite;
+        window.toggleChapterNote = toggleChapterNote;
         window.goToBookmark = goToBookmark;
+        window.goToChapterFromSaved = goToChapterFromSaved;
         window.deleteBookmark = deleteBookmark;
         window.goToRecentChapter = goToRecentChapter;
         window.removeSavedItem = removeSavedItem;
+        window.removeChapterSavedItem = removeChapterSavedItem;
 
         // Start
         init();
