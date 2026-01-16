@@ -1521,13 +1521,15 @@
             const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
             const popupHeight = 50;
             const spaceAbove = rect.top;
-            const spaceBelow = window.innerHeight - rect.bottom;
 
-            if (isMobile || spaceAbove < popupHeight + 20) {
-                // Position below the selection
+            if (isMobile) {
+                // Position well below the selection to avoid Android's native menu
+                highlightPopup.style.top = (rect.bottom + 80) + 'px';
+            } else if (spaceAbove < popupHeight + 20) {
+                // Desktop: position below if not enough space above
                 highlightPopup.style.top = (rect.bottom + 10) + 'px';
             } else {
-                // Position above the selection (desktop default)
+                // Desktop: position above the selection
                 highlightPopup.style.top = (rect.top - popupHeight) + 'px';
             }
             highlightPopup.classList.add('visible');
