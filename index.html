@@ -1932,9 +1932,18 @@
 
         // Event listeners
         function setupEventListeners() {
-            // Text selection
+            // Text selection - multiple triggers for reliability on mobile
             document.addEventListener('mouseup', handleSelection);
-            document.addEventListener('touchend', () => setTimeout(handleSelection, 100));
+
+            // Touch: longer delay to let Android finalize selection
+            document.addEventListener('touchend', () => setTimeout(handleSelection, 300));
+
+            // Also listen to selectionchange for when user adjusts selection handles
+            let selectionTimeout;
+            document.addEventListener('selectionchange', () => {
+                clearTimeout(selectionTimeout);
+                selectionTimeout = setTimeout(handleSelection, 200);
+            });
 
             // Header
             document.getElementById('menuBtn').addEventListener('click', openSidebar);
