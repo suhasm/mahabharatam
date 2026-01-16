@@ -247,17 +247,141 @@
             text-transform: uppercase;
         }
 
+        .verse-wrapper {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2px;
+            border-radius: var(--radius-sm);
+        }
+
         .verse {
             padding: 16px 20px;
-            margin-bottom: 2px;
-            background: transparent;
+            background: var(--bg-primary);
             border-radius: var(--radius-sm);
             position: relative;
-            transition: background var(--transition-fast);
+            transition: transform 0.2s ease, background var(--transition-fast);
+            touch-action: pan-y pinch-zoom;
         }
 
         .verse:hover {
             background: var(--bg-secondary);
+        }
+
+        /* Swipe action backgrounds */
+        .verse-swipe-bg {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            font-size: 28px;
+            pointer-events: none;
+        }
+
+        .verse-swipe-bg.left {
+            left: 0;
+            background: linear-gradient(90deg, rgba(201, 162, 39, 0.4) 0%, transparent 50%);
+            justify-content: flex-start;
+            padding-left: 24px;
+        }
+
+        .verse-swipe-bg.right {
+            right: 0;
+            background: linear-gradient(-90deg, rgba(59, 130, 246, 0.4) 0%, transparent 50%);
+            justify-content: flex-end;
+            padding-right: 24px;
+        }
+
+        .verse-swipe-bg .swipe-icon {
+            opacity: 0;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+
+        .verse-swipe-bg .swipe-icon.visible {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Inline note input */
+        .verse-note-input {
+            display: none;
+            padding: 12px 20px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        .verse-note-input.visible {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 200px; }
+        }
+
+        .verse-note-input textarea {
+            width: 100%;
+            min-height: 60px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .verse-note-input textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .verse-note-input .note-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            justify-content: flex-end;
+        }
+
+        .verse-note-input .note-btn {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .verse-note-input .note-btn.save {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .verse-note-input .note-btn.cancel {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .verse-note-input .note-btn.delete {
+            background: #dc2626;
+            color: white;
+            margin-right: auto;
+        }
+
+        /* Small indicator icons for verses with notes/favorites */
+        .verse-indicators {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            opacity: 0.8;
+            pointer-events: none;
+            display: flex;
+            gap: 4px;
         }
 
         .verse-number {
@@ -832,53 +956,157 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Verse bookmark icon */
-        .verse-bookmark {
+        /* Verse swipe container */
+        .verse-wrapper {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2px;
+        }
+
+        .verse {
+            position: relative;
+            transition: transform 0.15s ease-out;
+            touch-action: pan-y;
+        }
+
+        /* Swipe indicators behind the verse */
+        .swipe-indicator {
             position: absolute;
-            right: 12px;
-            top: 12px;
-            font-size: 16px;
-            cursor: pointer;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 24px;
             opacity: 0;
-            transition: all var(--transition-fast);
-            padding: 4px;
+            transition: opacity 0.15s ease;
         }
 
-        .verse:hover .verse-bookmark {
-            opacity: 0.4;
+        .swipe-indicator.left {
+            right: 0;
+            background: linear-gradient(to left, var(--bg-tertiary), transparent);
+            justify-content: flex-end;
         }
 
-        .verse-bookmark:hover {
-            opacity: 0.8 !important;
+        .swipe-indicator.right {
+            left: 0;
+            background: linear-gradient(to right, rgba(201, 162, 39, 0.2), transparent);
+            justify-content: flex-start;
         }
 
-        .verse-bookmark.active {
-            opacity: 1 !important;
-            color: var(--accent);
+        .swipe-indicator.visible {
+            opacity: 1;
         }
 
-        /* Verse favorite (bouquet) icon */
-        .verse-favorite {
+        /* Small status icons (non-interactive, just show state) */
+        .verse-status {
             position: absolute;
-            right: 40px;
-            top: 12px;
-            font-size: 16px;
+            right: 8px;
+            top: 8px;
+            font-size: 12px;
+            opacity: 0.7;
+            pointer-events: none;
+            display: flex;
+            gap: 4px;
+        }
+
+        /* Inline note editor */
+        .verse-inline-note {
+            display: none;
+            padding: 12px 20px;
+            background: var(--bg-tertiary);
+            border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+            margin-top: -2px;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .verse-inline-note.visible {
+            display: block;
+        }
+
+        .verse-inline-note textarea {
+            width: 100%;
+            min-height: 80px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .verse-inline-note textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .verse-inline-note-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .verse-inline-note-actions button {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            border: none;
             cursor: pointer;
-            opacity: 0;
+            font-size: 13px;
+            font-weight: 500;
             transition: all var(--transition-fast);
-            padding: 4px;
         }
 
-        .verse:hover .verse-favorite {
-            opacity: 0.4;
+        .verse-inline-note-actions .save-btn {
+            background: var(--accent);
+            color: var(--bg-primary);
         }
 
-        .verse-favorite:hover {
-            opacity: 0.8 !important;
+        .verse-inline-note-actions .cancel-btn {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
         }
 
-        .verse-favorite.active {
-            opacity: 1 !important;
+        .verse-inline-note-actions .delete-btn {
+            background: #dc2626;
+            color: white;
+            margin-right: auto;
+        }
+
+        /* Swipe hint toast */
+        .swipe-feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: var(--bg-secondary);
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            font-size: 32px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            z-index: 500;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .swipe-feedback.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
 
         /* Quick nav in sidebar */
@@ -1261,6 +1489,9 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <!-- Swipe feedback -->
+    <div class="swipe-feedback" id="swipeFeedback"></div>
+
     <script>
         // State management
         const state = {
@@ -1514,14 +1745,30 @@
                     // Apply highlights to verse text
                     const highlightedText = applyHighlightsToText(verse.v, chapterNum, verseId);
 
+                    // Build status icons string
+                    let statusIcons = '';
+                    if (isFavorite) statusIcons += '💐';
+                    if (isBookmarked) statusIcons += '📝';
+
+                    const existingNote = isBookmarked ? (state.bookmarks.find(b => b.location === fullVerseId)?.note || '') : '';
+
                     html += `
-                        <div class="verse" data-verse-id="${fullVerseId}">
-                            <span class="verse-bookmark ${isBookmarked ? 'active' : ''}"
-                                  onclick="toggleBookmark('${fullVerseId}')" title="Bookmark">🔖</span>
-                            <span class="verse-favorite ${isFavorite ? 'active' : ''}"
-                                  onclick="toggleFavorite('${fullVerseId}')" title="Mark as favorite">💐</span>
-                            <span class="verse-number">${verse.c}.${verseId}</span>
-                            <span class="verse-text" data-chapter="${chapterNum}" data-verse="${verseId}">${highlightedText}</span>
+                        <div class="verse-wrapper" data-verse-id="${fullVerseId}">
+                            <div class="swipe-indicator left">📝</div>
+                            <div class="swipe-indicator right">💐</div>
+                            <div class="verse">
+                                ${statusIcons ? `<span class="verse-status">${statusIcons}</span>` : ''}
+                                <span class="verse-number">${verse.c}.${verseId}</span>
+                                <span class="verse-text" data-chapter="${chapterNum}" data-verse="${verseId}">${highlightedText}</span>
+                            </div>
+                            <div class="verse-inline-note" id="note-${fullVerseId.replace(':', '-')}">
+                                <textarea placeholder="Add a note...">${existingNote}</textarea>
+                                <div class="verse-inline-note-actions">
+                                    ${isBookmarked ? `<button class="delete-btn" onclick="deleteInlineNote('${fullVerseId}')">Delete</button>` : ''}
+                                    <button class="cancel-btn" onclick="closeInlineNote('${fullVerseId}')">Cancel</button>
+                                    <button class="save-btn" onclick="saveInlineNote('${fullVerseId}')">Save</button>
+                                </div>
+                            </div>
                         </div>
                     `;
                 });
@@ -2240,6 +2487,243 @@
             bookmarkOverlay.classList.remove('visible');
         }
 
+        // ==================== VERSE SWIPE & INLINE NOTES ====================
+
+        // Inline note functions
+        function openInlineNote(verseId) {
+            // Close any other open notes first
+            document.querySelectorAll('.verse-inline-note.visible').forEach(el => {
+                el.classList.remove('visible');
+            });
+
+            const noteId = `note-${verseId.replace(':', '-')}`;
+            const noteEl = document.getElementById(noteId);
+            if (noteEl) {
+                noteEl.classList.add('visible');
+                const textarea = noteEl.querySelector('textarea');
+                if (textarea) {
+                    textarea.focus();
+                }
+            }
+        }
+
+        function closeInlineNote(verseId) {
+            const noteId = `note-${verseId.replace(':', '-')}`;
+            const noteEl = document.getElementById(noteId);
+            if (noteEl) {
+                noteEl.classList.remove('visible');
+            }
+        }
+
+        function saveInlineNote(verseId) {
+            const noteId = `note-${verseId.replace(':', '-')}`;
+            const noteEl = document.getElementById(noteId);
+            if (!noteEl) return;
+
+            const textarea = noteEl.querySelector('textarea');
+            const note = textarea ? textarea.value.trim() : '';
+
+            // Save the note
+            state.bookmarks = state.bookmarks.filter(b => b.location !== verseId);
+            if (note || state.bookmarks.some(b => b.location === verseId)) {
+                state.bookmarks.push({ location: verseId, note, timestamp: Date.now() });
+            }
+
+            scheduleSyncToGist();
+            noteEl.classList.remove('visible');
+            showToast('Note saved');
+            updateStats();
+
+            // Update status icons
+            updateVerseStatusIcons(verseId);
+        }
+
+        function deleteInlineNote(verseId) {
+            state.bookmarks = state.bookmarks.filter(b => b.location !== verseId);
+            scheduleSyncToGist();
+
+            const noteId = `note-${verseId.replace(':', '-')}`;
+            const noteEl = document.getElementById(noteId);
+            if (noteEl) {
+                noteEl.classList.remove('visible');
+                // Clear the textarea
+                const textarea = noteEl.querySelector('textarea');
+                if (textarea) textarea.value = '';
+                // Remove delete button (will reappear on re-render)
+                const deleteBtn = noteEl.querySelector('.delete-btn');
+                if (deleteBtn) deleteBtn.remove();
+            }
+
+            showToast('Note deleted');
+            updateStats();
+            updateVerseStatusIcons(verseId);
+        }
+
+        function updateVerseStatusIcons(verseId) {
+            const wrapper = document.querySelector(`[data-verse-id="${verseId}"]`);
+            if (!wrapper) return;
+
+            const verse = wrapper.querySelector('.verse');
+            if (!verse) return;
+
+            const isFavorite = state.favorites.includes(verseId);
+            const isBookmarked = state.bookmarks.some(b => b.location === verseId);
+
+            let statusIcons = '';
+            if (isFavorite) statusIcons += '💐';
+            if (isBookmarked) statusIcons += '📝';
+
+            let statusEl = verse.querySelector('.verse-status');
+            if (statusIcons) {
+                if (!statusEl) {
+                    statusEl = document.createElement('span');
+                    statusEl.className = 'verse-status';
+                    verse.insertBefore(statusEl, verse.firstChild);
+                }
+                statusEl.textContent = statusIcons;
+            } else if (statusEl) {
+                statusEl.remove();
+            }
+        }
+
+        // Swipe feedback
+        function showSwipeFeedback(emoji) {
+            const feedback = document.getElementById('swipeFeedback');
+            feedback.textContent = emoji;
+            feedback.classList.add('visible');
+            setTimeout(() => feedback.classList.remove('visible'), 600);
+        }
+
+        // Verse swipe setup
+        function setupVerseSwipe() {
+            let activeVerse = null;
+            let startX = 0;
+            let startY = 0;
+            let currentX = 0;
+            let isDragging = false;
+            let isHorizontalSwipe = null; // null = undecided, true = horizontal, false = vertical
+
+            const SWIPE_THRESHOLD = 80;
+            const DIRECTION_LOCK_THRESHOLD = 10;
+
+            mainContent.addEventListener('touchstart', e => {
+                const wrapper = e.target.closest('.verse-wrapper');
+                if (!wrapper || state.currentView !== 'verses') {
+                    activeVerse = null;
+                    return;
+                }
+
+                activeVerse = wrapper;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                currentX = 0;
+                isDragging = true;
+                isHorizontalSwipe = null;
+
+                const verse = wrapper.querySelector('.verse');
+                if (verse) verse.style.transition = 'none';
+            }, { passive: true });
+
+            mainContent.addEventListener('touchmove', e => {
+                if (!isDragging || !activeVerse) return;
+
+                const deltaX = e.touches[0].clientX - startX;
+                const deltaY = e.touches[0].clientY - startY;
+
+                // Decide swipe direction if not yet decided
+                if (isHorizontalSwipe === null) {
+                    if (Math.abs(deltaX) > DIRECTION_LOCK_THRESHOLD || Math.abs(deltaY) > DIRECTION_LOCK_THRESHOLD) {
+                        isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
+                    }
+                }
+
+                // Only process horizontal swipes
+                if (isHorizontalSwipe !== true) return;
+
+                currentX = deltaX;
+                const verse = activeVerse.querySelector('.verse');
+                if (verse) {
+                    // Limit the swipe distance
+                    const limitedX = Math.max(-120, Math.min(120, deltaX));
+                    verse.style.transform = `translateX(${limitedX}px)`;
+                }
+
+                // Show indicators
+                const leftIndicator = activeVerse.querySelector('.swipe-indicator.left');
+                const rightIndicator = activeVerse.querySelector('.swipe-indicator.right');
+
+                if (deltaX < -30 && leftIndicator) {
+                    leftIndicator.classList.add('visible');
+                } else if (leftIndicator) {
+                    leftIndicator.classList.remove('visible');
+                }
+
+                if (deltaX > 30 && rightIndicator) {
+                    rightIndicator.classList.add('visible');
+                } else if (rightIndicator) {
+                    rightIndicator.classList.remove('visible');
+                }
+            }, { passive: true });
+
+            mainContent.addEventListener('touchend', e => {
+                if (!isDragging || !activeVerse) return;
+
+                const verse = activeVerse.querySelector('.verse');
+                const verseId = activeVerse.dataset.verseId;
+
+                // Reset visual state
+                if (verse) {
+                    verse.style.transition = 'transform 0.2s ease-out';
+                    verse.style.transform = 'translateX(0)';
+                }
+
+                // Hide indicators
+                const leftIndicator = activeVerse.querySelector('.swipe-indicator.left');
+                const rightIndicator = activeVerse.querySelector('.swipe-indicator.right');
+                if (leftIndicator) leftIndicator.classList.remove('visible');
+                if (rightIndicator) rightIndicator.classList.remove('visible');
+
+                // Process swipe action if horizontal and threshold met
+                if (isHorizontalSwipe === true && verseId) {
+                    if (currentX < -SWIPE_THRESHOLD) {
+                        // Swipe left -> open note
+                        showSwipeFeedback('📝');
+                        setTimeout(() => openInlineNote(verseId), 200);
+                    } else if (currentX > SWIPE_THRESHOLD) {
+                        // Swipe right -> toggle favorite
+                        const isFavorite = state.favorites.includes(verseId);
+                        showSwipeFeedback(isFavorite ? '💔' : '💐');
+                        toggleFavorite(verseId);
+                        updateVerseStatusIcons(verseId);
+                    }
+                }
+
+                isDragging = false;
+                activeVerse = null;
+                isHorizontalSwipe = null;
+            }, { passive: true });
+
+            // Cancel on touch cancel
+            mainContent.addEventListener('touchcancel', () => {
+                if (activeVerse) {
+                    const verse = activeVerse.querySelector('.verse');
+                    if (verse) {
+                        verse.style.transition = 'transform 0.2s ease-out';
+                        verse.style.transform = 'translateX(0)';
+                    }
+                    const leftIndicator = activeVerse.querySelector('.swipe-indicator.left');
+                    const rightIndicator = activeVerse.querySelector('.swipe-indicator.right');
+                    if (leftIndicator) leftIndicator.classList.remove('visible');
+                    if (rightIndicator) rightIndicator.classList.remove('visible');
+                }
+                isDragging = false;
+                activeVerse = null;
+                isHorizontalSwipe = null;
+            }, { passive: true });
+        }
+
+        // ==================== END VERSE SWIPE ====================
+
         // Event listeners
         function setupEventListeners() {
             // Text selection - multiple triggers for reliability on mobile
@@ -2300,17 +2784,8 @@
             document.getElementById('fontIncrease').addEventListener('click', () => changeFontSize(2));
             document.getElementById('fontDecrease').addEventListener('click', () => changeFontSize(-2));
 
-            // Swipe
-            let touchStartX = 0;
-            mainContent.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
-            mainContent.addEventListener('touchend', e => {
-                if (state.currentView !== 'verses') return;
-                const diff = touchStartX - e.changedTouches[0].screenX;
-                if (Math.abs(diff) > 100) {
-                    if (diff > 0) goToNextChapter();
-                    else goToPrevChapter();
-                }
-            });
+            // Verse swipe handling
+            setupVerseSwipe();
 
             // Keyboard
             document.addEventListener('keydown', e => {
@@ -2848,6 +3323,10 @@
         window.goToRecentChapter = goToRecentChapter;
         window.removeSavedItem = removeSavedItem;
         window.removeChapterSavedItem = removeChapterSavedItem;
+        window.openInlineNote = openInlineNote;
+        window.closeInlineNote = closeInlineNote;
+        window.saveInlineNote = saveInlineNote;
+        window.deleteInlineNote = deleteInlineNote;
 
         // Start
         init();
