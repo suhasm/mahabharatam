@@ -1103,6 +1103,10 @@
             <span class="icon">📝</span>
             <span>Notes</span>
         </button>
+        <button class="nav-btn" id="navFavorites">
+            <span class="icon">💐</span>
+            <span>Favorites</span>
+        </button>
     </nav>
 
     <!-- Sidebar -->
@@ -1187,6 +1191,16 @@
             <button class="icon-btn" id="closeBookmarks">✕</button>
         </div>
         <div id="bookmarksList"></div>
+    </aside>
+
+    <!-- Favorites panel -->
+    <div class="sidebar-overlay" id="favoritesOverlay"></div>
+    <aside class="bookmarks-panel" id="favoritesPanel">
+        <div class="sidebar-header">
+            <h2>💐 Favorites</h2>
+            <button class="icon-btn" id="closeFavorites">✕</button>
+        </div>
+        <div id="favoritesList"></div>
     </aside>
 
     <!-- Note modal -->
@@ -1766,6 +1780,70 @@
             }, 100);
         }
 
+        // Favorites panel functions
+        function renderFavorites() {
+            const list = document.getElementById('favoritesList');
+            if (state.favorites.length === 0) {
+                list.innerHTML = '<p style="padding: 16px; color: var(--text-secondary);">No favorites yet. Tap the 💐 icon on any verse to add it.</p>';
+                return;
+            }
+
+            // Sort by chapter order
+            const sorted = [...state.favorites].sort((a, b) => {
+                const [chA, vA] = a.split(':');
+                const [chB, vB] = b.split(':');
+                if (chA !== chB) return chA.localeCompare(chB, undefined, { numeric: true });
+                return parseInt(vA) - parseInt(vB);
+            });
+
+            list.innerHTML = sorted.map(location => `
+                <div class="bookmark-item">
+                    <span class="bookmark-delete" onclick="event.stopPropagation(); removeFavoriteFromPanel('${location}')">✕</span>
+                    <div class="bookmark-location" onclick="goToFavorite('${location}')">${location}</div>
+                </div>
+            `).join('');
+        }
+
+        function removeFavoriteFromPanel(location) {
+            state.favorites = state.favorites.filter(f => f !== location);
+            scheduleSyncToGist();
+            showToast('Removed from favorites');
+            updateStats();
+            renderFavorites();
+
+            // Update icon if verse is visible
+            const icon = document.querySelector(`[data-verse-id="${location}"] .verse-favorite`);
+            if (icon) icon.classList.remove('active');
+        }
+
+        async function goToFavorite(location) {
+            closeFavoritesPanel();
+            const [chapter, verse] = location.split(':');
+            const [book] = chapter.split('.');
+            state.currentBook = state.allBooks.find(b => b.number == book);
+            await navigateToChapter(chapter);
+
+            setTimeout(() => {
+                const el = document.querySelector(`[data-verse-id="${location}"]`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.style.boxShadow = '0 0 0 3px var(--accent)';
+                    setTimeout(() => el.style.boxShadow = '', 1500);
+                }
+            }, 100);
+        }
+
+        function openFavoritesPanel() {
+            renderFavorites();
+            document.getElementById('favoritesPanel').classList.add('open');
+            document.getElementById('favoritesOverlay').classList.add('visible');
+        }
+
+        function closeFavoritesPanel() {
+            document.getElementById('favoritesPanel').classList.remove('open');
+            document.getElementById('favoritesOverlay').classList.remove('visible');
+        }
+
         // Navigation
         function updateBreadcrumb() {
             let html = '<span onclick="renderBookList()">पर्वाणि</span>';
@@ -1959,6 +2037,10 @@
             document.getElementById('closeBookmarks').addEventListener('click', closeBookmarksPanel);
             bookmarkOverlay.addEventListener('click', closeBookmarksPanel);
 
+            // Favorites
+            document.getElementById('closeFavorites').addEventListener('click', closeFavoritesPanel);
+            document.getElementById('favoritesOverlay').addEventListener('click', closeFavoritesPanel);
+
             // Modal
             document.getElementById('closeModal').addEventListener('click', () => noteModal.classList.remove('visible'));
             document.getElementById('cancelNote').addEventListener('click', () => noteModal.classList.remove('visible'));
@@ -1985,6 +2067,11 @@
                 document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
                 document.getElementById('navBookmarks').classList.add('active');
                 openBookmarksPanel();
+            });
+            document.getElementById('navFavorites').addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('navFavorites').classList.add('active');
+                openFavoritesPanel();
             });
 
             // Settings
@@ -2524,6 +2611,8 @@
         window.goToBookmark = goToBookmark;
         window.deleteBookmark = deleteBookmark;
         window.goToRecentChapter = goToRecentChapter;
+        window.goToFavorite = goToFavorite;
+        window.removeFavoriteFromPanel = removeFavoriteFromPanel;
 
         // Start
         init();
