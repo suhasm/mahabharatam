@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="sa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>॥ महाभारतम् ॥</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #252542;
+            --text-primary: #e8e8f0;
+            --text-secondary: #9898b0;
+            --text-muted: #6a6a80;
+            --accent: #c9a227;
+            --accent-glow: rgba(201, 162, 39, 0.15);
+            --accent-hover: #ddb530;
+            --border: rgba(255,255,255,0.06);
+            --highlight-green: rgba(52, 211, 153, 0.25);
+            --highlight-orange: rgba(251, 191, 36, 0.25);
+            --highlight-red: rgba(248, 113, 113, 0.25);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+            --shadow-md: 0 8px 30px rgba(0,0,0,0.4);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans Devanagari', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+            font-size: 17px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+            color: var(--accent);
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: color var(--transition-fast);
+        }
+
+        .header h1:hover {
+            color: var(--accent-hover);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+            color: var(--text-secondary);
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Navigation breadcrumb */
+        .breadcrumb {
+            background: rgba(26, 26, 46, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 10px 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            top: 58px;
+            left: 0;
+            right: 0;
+            z-index: 99;
+        }
+
+        .breadcrumb span {
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color var(--transition-fast);
+        }
+
+        .breadcrumb span:hover {
+            color: var(--accent);
+        }
+
+        /* Main content area */
+        .main-content {
+            padding-top: 110px;
+            padding-bottom: 140px;
+            max-width: 720px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* Book list view */
+        .book-list, .chapter-list {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .book-card, .chapter-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .book-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .book-card:hover, .chapter-card:hover {
+            background: var(--bg-tertiary);
+            border-color: rgba(201, 162, 39, 0.2);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .book-card:hover::before {
+            opacity: 1;
+        }
+
+        .book-card:active, .chapter-card:active {
+            transform: translateY(0) scale(0.99);
+        }
+
+        .book-number, .chapter-number {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .book-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .book-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .bookmarked-indicator {
+            color: var(--accent);
+            margin-left: 8px;
+        }
+
+        /* Verse view */
+        .verse-container {
+            padding: 16px;
+        }
+
+        .chapter-header {
+            text-align: center;
+            padding: 32px 20px;
+            margin-bottom: 8px;
+        }
+
+        .chapter-header h2 {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--accent);
+            margin: 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .verse {
+            padding: 16px 20px;
+            margin-bottom: 2px;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            position: relative;
+            transition: background var(--transition-fast);
+        }
+
+        .verse:hover {
+            background: var(--bg-secondary);
+        }
+
+        .verse-number {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-right: 12px;
+            user-select: none;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .verse-text {
+            font-size: 21px;
+            line-height: 2.1;
+            user-select: text;
+            -webkit-user-select: text;
+            display: inline;
+            color: var(--text-primary);
+        }
+
+        /* Text highlighting */
+        .hl-green {
+            background: var(--highlight-green);
+            border-radius: 3px;
+            padding: 2px 0;
+        }
+        .hl-orange {
+            background: var(--highlight-orange);
+            border-radius: 3px;
+            padding: 2px 0;
+        }
+        .hl-red {
+            background: var(--highlight-red);
+            border-radius: 3px;
+            padding: 2px 0;
+        }
+
+        /* Highlight popup */
+        .highlight-popup {
+            position: fixed;
+            background: var(--bg-secondary);
+            border-radius: 50px;
+            padding: 8px 12px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            display: none;
+            gap: 8px;
+            z-index: 200;
+            align-items: center;
+            animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .highlight-popup.visible {
+            display: flex;
+        }
+
+        .color-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .color-btn:active {
+            transform: scale(0.95);
+        }
+
+        .color-btn.green { background: #34d399; }
+        .color-btn.orange { background: #fbbf24; }
+        .color-btn.red { background: #f87171; }
+        .color-btn.clear {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .color-btn.copy {
+            background: var(--accent);
+            color: var(--bg-primary);
+            font-size: 16px;
+        }
+
+        /* Speaker labels */
+        .speaker-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent);
+            margin: 24px 0 12px 20px;
+            padding: 6px 14px;
+            background: var(--accent-glow);
+            display: inline-block;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(201, 162, 39, 0.2);
+        }
+
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+            z-index: 100;
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            padding: 8px 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all var(--transition-fast);
+        }
+
+        .nav-btn:hover {
+            color: var(--text-secondary);
+        }
+
+        .nav-btn.active {
+            color: var(--accent);
+        }
+
+        .nav-btn .icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        /* Sidebar / Menu */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 85%;
+            max-width: 340px;
+            height: 100%;
+            background: var(--bg-secondary);
+            z-index: 300;
+            transition: left var(--transition-normal);
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 250;
+            display: none;
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+        }
+
+        .sidebar-overlay.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-section h3 {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin: 0 0 16px 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        /* Bookmarks panel */
+        .bookmarks-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 85%;
+            max-width: 340px;
+            height: 100%;
+            background: var(--bg-secondary);
+            z-index: 300;
+            transition: right var(--transition-normal);
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .bookmarks-panel.open {
+            right: 0;
+        }
+
+        .bookmark-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+
+        .bookmark-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .bookmark-location {
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .bookmark-note {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        .bookmark-delete {
+            float: right;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 14px;
+            transition: color var(--transition-fast);
+        }
+
+        .bookmark-delete:hover {
+            color: #f87171;
+        }
+
+        /* Modal for notes */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 400;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-body textarea {
+            width: 100%;
+            min-height: 120px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            transition: border-color var(--transition-fast);
+        }
+
+        .modal-body textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .modal-body textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .modal-actions {
+            padding: 16px 20px 20px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        /* Chapter navigation */
+        .chapter-nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px;
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            background: rgba(15, 15, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+        }
+
+        .chapter-nav-btn {
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+        }
+
+        .chapter-nav-btn:hover:not(:disabled) {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: rgba(201, 162, 39, 0.3);
+        }
+
+        .chapter-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Settings */
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .setting-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .font-size-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .font-size-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+        }
+
+        .font-size-btn:hover {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        #fontSizeDisplay {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* Highlights summary */
+        .highlight-summary {
+            display: flex;
+            gap: 20px;
+            margin-top: 12px;
+        }
+
+        .highlight-count {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .highlight-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .highlight-dot.green { background: #34d399; }
+        .highlight-dot.orange { background: #fbbf24; }
+        .highlight-dot.red { background: #f87171; }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 14px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 500;
+            opacity: 0;
+            transition: all var(--transition-normal);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+        }
+
+        .toast.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 40px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .loading::after {
+            content: '';
+            display: block;
+            width: 24px;
+            height: 24px;
+            margin: 20px auto;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Verse bookmark icon */
+        .verse-bookmark {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all var(--transition-fast);
+            padding: 4px;
+        }
+
+        .verse:hover .verse-bookmark {
+            opacity: 0.4;
+        }
+
+        .verse-bookmark:hover {
+            opacity: 0.8 !important;
+        }
+
+        .verse-bookmark.active {
+            opacity: 1 !important;
+            color: var(--accent);
+        }
+
+        /* Verse favorite (bouquet) icon */
+        .verse-favorite {
+            position: absolute;
+            right: 40px;
+            top: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all var(--transition-fast);
+            padding: 4px;
+        }
+
+        .verse:hover .verse-favorite {
+            opacity: 0.4;
+        }
+
+        .verse-favorite:hover {
+            opacity: 0.8 !important;
+        }
+
+        .verse-favorite.active {
+            opacity: 1 !important;
+        }
+
+        /* Quick nav in sidebar */
+        #quickNav .chapter-card {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            background: var(--bg-tertiary);
+        }
+
+        #quickNav .chapter-card:hover {
+            background: var(--accent-glow);
+            border-color: rgba(201, 162, 39, 0.3);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Selection color */
+        ::selection {
+            background: rgba(201, 162, 39, 0.3);
+            color: var(--text-primary);
+        }
+
+        /* Sync status */
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .sync-dot.synced { background: #34d399; }
+        .sync-dot.syncing { background: #fbbf24; animation: pulse 1s infinite; }
+        .sync-dot.offline { background: #f87171; }
+        .sync-dot.error { background: #f87171; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .sync-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: monospace;
+            margin-bottom: 12px;
+        }
+
+        .sync-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .sync-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .sync-btn {
+            width: 100%;
+            padding: 10px 16px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: var(--accent);
+            color: var(--bg-primary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .sync-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .sync-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .sync-btn.secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .sync-btn.secondary:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .sync-info {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .sync-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .sync-actions .sync-btn {
+            flex: 1;
+        }
+
+        /* Recent chapters */
+        .recent-chapter-item {
+            padding: 10px 14px;
+            margin-bottom: 6px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .recent-chapter-item:hover {
+            background: var(--accent-glow);
+            border-color: rgba(201, 162, 39, 0.3);
+        }
+
+        .recent-chapter-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .recent-chapter-num {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .recent-chapter-book {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .recent-chapter-time {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .recent-empty {
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <button class="icon-btn" id="menuBtn">☰</button>
+            <h1 id="homeBtn">॥ महाभारतम् ॥</h1>
+            <div class="header-actions">
+                <button class="icon-btn" id="bookmarksBtn">📝</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb" id="breadcrumb">
+        <span id="breadcrumbHome">पर्वाणि</span>
+    </div>
+
+    <!-- Main content -->
+    <main class="main-content" id="mainContent">
+        <div class="loading">Loading...</div>
+    </main>
+
+    <!-- Highlight popup - positioned near selection -->
+    <div class="highlight-popup" id="highlightPopup">
+        <button class="color-btn green" data-color="green" title="Green"></button>
+        <button class="color-btn orange" data-color="orange" title="Orange"></button>
+        <button class="color-btn red" data-color="red" title="Red"></button>
+        <button class="color-btn clear" data-color="clear" title="Clear">✕</button>
+        <button class="color-btn copy" id="copyBtn" title="Copy">📋</button>
+    </div>
+
+    <!-- Chapter navigation -->
+    <div class="chapter-nav" id="chapterNav" style="display: none;">
+        <button class="chapter-nav-btn" id="prevChapter">← Previous</button>
+        <button class="chapter-nav-btn" id="nextChapter">Next →</button>
+    </div>
+
+    <!-- Bottom navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" id="navRead">
+            <span class="icon">📖</span>
+            <span>Read</span>
+        </button>
+        <button class="nav-btn" id="navBookmarks">
+            <span class="icon">📝</span>
+            <span>Notes</span>
+        </button>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Menu</h2>
+            <button class="icon-btn" id="closeSidebar">✕</button>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Cloud Sync</h3>
+            <div class="sync-status">
+                <div class="sync-dot" id="syncDot"></div>
+                <span id="syncStatusText">Not configured</span>
+            </div>
+            <div id="syncSetup">
+                <input type="password" class="sync-input" id="githubToken" placeholder="GitHub Personal Access Token">
+                <button class="sync-btn" id="connectGithub">Connect to GitHub</button>
+                <p class="sync-info">Create a token at GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic). Select "gist" scope only.</p>
+            </div>
+            <div id="syncConnected" style="display: none;">
+                <div class="sync-actions">
+                    <button class="sync-btn secondary" id="syncNow">Sync Now</button>
+                    <button class="sync-btn secondary" id="disconnectSync">Disconnect</button>
+                </div>
+                <p class="sync-info" id="lastSyncInfo"></p>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Recent Chapters</h3>
+            <div id="recentChapters">
+                <p class="recent-empty">No chapters viewed yet</p>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Settings</h3>
+            <div class="setting-item">
+                <span class="setting-label">Font Size</span>
+                <div class="font-size-control">
+                    <button class="font-size-btn" id="fontDecrease">−</button>
+                    <span id="fontSizeDisplay">20</span>
+                    <button class="font-size-btn" id="fontIncrease">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Statistics</h3>
+            <div class="highlight-summary">
+                <div class="highlight-count">
+                    <div class="highlight-dot green"></div>
+                    <span id="greenCount">0</span>
+                </div>
+                <div class="highlight-count">
+                    <div class="highlight-dot orange"></div>
+                    <span id="orangeCount">0</span>
+                </div>
+                <div class="highlight-count">
+                    <div class="highlight-dot red"></div>
+                    <span id="redCount">0</span>
+                </div>
+            </div>
+            <p style="font-size: 14px; color: var(--text-secondary); margin-top: 12px;">
+                <span id="bookmarkCount">0</span> notes · <span id="favoriteCount">0</span> 💐 favorites
+            </p>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Jump to Book</h3>
+            <div id="quickNav"></div>
+        </div>
+    </aside>
+
+    <!-- Notes panel -->
+    <div class="sidebar-overlay" id="bookmarkOverlay"></div>
+    <aside class="bookmarks-panel" id="bookmarksPanel">
+        <div class="sidebar-header">
+            <h2>Notes</h2>
+            <button class="icon-btn" id="closeBookmarks">✕</button>
+        </div>
+        <div id="bookmarksList"></div>
+    </aside>
+
+    <!-- Note modal -->
+    <div class="modal-overlay" id="noteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Note</h3>
+                <button class="icon-btn" id="closeModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="noteVerseRef" style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;"></p>
+                <textarea id="noteText" placeholder="Type your note here..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" id="deleteNote" style="display: none;">Delete</button>
+                <div style="flex: 1;"></div>
+                <button class="btn btn-secondary" id="cancelNote">Cancel</button>
+                <button class="btn btn-primary" id="saveNote">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // State management
+        const state = {
+            currentView: 'books',
+            currentBook: null,
+            currentChapter: null,
+            allBooks: [],
+            allChapters: [],
+            loadedData: new Map(),
+            // Highlights stored as: { "chapterNum": { verseId: [{start, end, color}, ...] } }
+            highlights: JSON.parse(localStorage.getItem('mb_highlights2') || '{}'),
+            bookmarks: JSON.parse(localStorage.getItem('mb_bookmarks') || '[]'),
+            favorites: JSON.parse(localStorage.getItem('mb_favorites') || '[]'),
+            recentChapters: JSON.parse(localStorage.getItem('mb_recent_chapters') || '[]'),
+            fontSize: parseInt(localStorage.getItem('mb_fontSize') || '20'),
+            selectedRange: null,
+            selectedVerseId: null
+        };
+
+        // Sync state
+        const syncState = {
+            token: localStorage.getItem('mb_github_token') || null,
+            gistId: localStorage.getItem('mb_gist_id') || null,
+            lastSync: localStorage.getItem('mb_last_sync') || null,
+            status: 'idle', // idle, syncing, synced, error, offline
+            pendingSync: false,
+            debounceTimer: null,
+            DEBOUNCE_DELAY: 5000 // 5 seconds
+        };
+
+        // File mapping
+        const fileRanges = [
+            { file: 1, startChapter: '1.1', endChapter: '2.54' },
+            { file: 2, startChapter: '2.54', endChapter: '3.245' },
+            { file: 3, startChapter: '3.245', endChapter: '5.172' },
+            { file: 4, startChapter: '5.172', endChapter: '7.84' },
+            { file: 5, startChapter: '7.84', endChapter: '9.20' },
+            { file: 6, startChapter: '9.20', endChapter: '12.151' },
+            { file: 7, startChapter: '12.151', endChapter: '13.36' },
+            { file: 8, startChapter: '13.36', endChapter: '18.5' }
+        ];
+
+        // DOM elements
+        const mainContent = document.getElementById('mainContent');
+        const breadcrumb = document.getElementById('breadcrumb');
+        const highlightPopup = document.getElementById('highlightPopup');
+        const chapterNav = document.getElementById('chapterNav');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const bookmarksPanel = document.getElementById('bookmarksPanel');
+        const bookmarkOverlay = document.getElementById('bookmarkOverlay');
+        const noteModal = document.getElementById('noteModal');
+        const toast = document.getElementById('toast');
+
+        // Initialize
+        async function init() {
+            await loadMetadata();
+            applySettings();
+            renderBookList();
+            setupEventListeners();
+            setupSyncListeners();
+            updateStats();
+            renderRecentChapters();
+        }
+
+        // Load metadata
+        async function loadMetadata() {
+            try {
+                const response = await fetch('mahabharatam1.json');
+                const data = await response.json();
+                state.allBooks = data.books;
+                state.allChapters = data.chapters;
+                state.loadedData.set(1, data.data);
+                buildQuickNav();
+            } catch (error) {
+                console.error('Error loading metadata:', error);
+                mainContent.innerHTML = '<div class="loading">Error loading data. Please refresh.</div>';
+            }
+        }
+
+        // Load data file
+        async function loadDataFile(fileIndex) {
+            if (state.loadedData.has(fileIndex)) {
+                return state.loadedData.get(fileIndex);
+            }
+            try {
+                const response = await fetch(`mahabharatam${fileIndex}.json`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                state.loadedData.set(fileIndex, data.data);
+                return data.data;
+            } catch (error) {
+                console.error(`Error loading file ${fileIndex}:`, error);
+                return [];
+            }
+        }
+
+        // Get file for chapter
+        function getFileForChapter(chapterNum) {
+            const [book, chapter] = chapterNum.split('.').map(Number);
+            const numericChapter = book * 1000 + chapter;
+            for (const range of fileRanges) {
+                const [startBook, startCh] = range.startChapter.split('.').map(Number);
+                const [endBook, endCh] = range.endChapter.split('.').map(Number);
+                if (numericChapter >= startBook * 1000 + startCh && numericChapter <= endBook * 1000 + endCh) {
+                    return range.file;
+                }
+            }
+            return 1;
+        }
+
+        // Get verses for chapter
+        async function getVersesForChapter(chapterNum) {
+            const primaryFile = getFileForChapter(chapterNum);
+            let data = await loadDataFile(primaryFile);
+            if (!data || !Array.isArray(data)) return [];
+
+            let verses = data.filter(v => v.c === chapterNum);
+
+            if (verses.length === 0) {
+                if (primaryFile > 1) {
+                    const prevData = await loadDataFile(primaryFile - 1);
+                    if (prevData) verses = [...prevData.filter(v => v.c === chapterNum), ...verses];
+                }
+                if (primaryFile < 8) {
+                    const nextData = await loadDataFile(primaryFile + 1);
+                    if (nextData) verses = [...verses, ...nextData.filter(v => v.c === chapterNum)];
+                }
+            }
+            return verses;
+        }
+
+        // Build quick nav
+        function buildQuickNav() {
+            document.getElementById('quickNav').innerHTML = state.allBooks.map(book => `
+                <div class="chapter-card" style="padding: 10px; margin-bottom: 8px;"
+                     onclick="navigateToBook(${book.number})">
+                    ${book.number}. ${book.name}
+                </div>
+            `).join('');
+        }
+
+        // Render book list
+        function renderBookList() {
+            state.currentView = 'books';
+            state.currentBook = null;
+            state.currentChapter = null;
+            chapterNav.style.display = 'none';
+            updateBreadcrumb();
+
+            mainContent.innerHTML = `
+                <div class="book-list">
+                    ${state.allBooks.map(book => `
+                        <div class="book-card" onclick="navigateToBook(${book.number})">
+                            <div class="book-number">पर्व ${book.number}</div>
+                            <div class="book-name">${book.name}</div>
+                            <div class="book-subtitle">${book.subtitle || ''}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Navigate to book
+        function navigateToBook(bookNum) {
+            state.currentBook = state.allBooks.find(b => b.number == bookNum);
+            state.currentView = 'chapters';
+            chapterNav.style.display = 'none';
+            const bookChapters = state.allChapters.filter(c => c.number.startsWith(bookNum + '.'));
+            updateBreadcrumb();
+
+            mainContent.innerHTML = `
+                <div class="chapter-list">
+                    <div class="chapter-header">
+                        <h2>${state.currentBook.name}</h2>
+                    </div>
+                    ${bookChapters.map(chapter => {
+                        const hasBookmark = state.bookmarks.some(b => b.location.startsWith(chapter.number));
+                        return `
+                            <div class="chapter-card" onclick="navigateToChapter('${chapter.number}')">
+                                <div class="chapter-number">अध्यायः ${chapter.number}${hasBookmark ? ' ★' : ''}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            mainContent.scrollTop = 0;
+        }
+
+        // Navigate to chapter
+        async function navigateToChapter(chapterNum) {
+            mainContent.innerHTML = '<div class="loading">Loading...</div>';
+            state.currentChapter = chapterNum;
+            state.currentView = 'verses';
+
+            // Add to recent chapters
+            addToRecentChapters(chapterNum);
+
+            try {
+                const verses = await getVersesForChapter(chapterNum);
+                updateBreadcrumb();
+                chapterNav.style.display = 'flex';
+                updateChapterNavButtons();
+
+                if (!verses || verses.length === 0) {
+                    mainContent.innerHTML = '<div class="loading">No verses found.</div>';
+                    return;
+                }
+
+                let html = `<div class="verse-container">`;
+
+                verses.forEach((verse, idx) => {
+                    if (verse.t && !verse.v) {
+                        html += `<div class="speaker-label">${verse.t}</div>`;
+                        return;
+                    }
+                    if (!verse.v) return;
+
+                    const verseId = verse.n || idx;
+                    const fullVerseId = `${verse.c}:${verseId}`;
+                    const isBookmarked = state.bookmarks.some(b => b.location === fullVerseId);
+                    const isFavorite = state.favorites.includes(fullVerseId);
+
+                    // Apply highlights to verse text
+                    const highlightedText = applyHighlightsToText(verse.v, chapterNum, verseId);
+
+                    html += `
+                        <div class="verse" data-verse-id="${fullVerseId}">
+                            <span class="verse-bookmark ${isBookmarked ? 'active' : ''}"
+                                  onclick="toggleBookmark('${fullVerseId}')" title="Bookmark">🔖</span>
+                            <span class="verse-favorite ${isFavorite ? 'active' : ''}"
+                                  onclick="toggleFavorite('${fullVerseId}')" title="Mark as favorite">💐</span>
+                            <span class="verse-number">${verse.c}.${verseId}</span>
+                            <span class="verse-text" data-chapter="${chapterNum}" data-verse="${verseId}">${highlightedText}</span>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+                mainContent.innerHTML = html;
+                mainContent.scrollTop = 0;
+                applyFontSize();
+            } catch (error) {
+                console.error('Error:', error);
+                mainContent.innerHTML = `<div class="loading">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Apply highlights to verse text
+        function applyHighlightsToText(text, chapter, verseId) {
+            const chapterHighlights = state.highlights[chapter];
+            if (!chapterHighlights || !chapterHighlights[verseId]) {
+                return text;
+            }
+
+            const highlights = chapterHighlights[verseId];
+            if (!highlights || highlights.length === 0) return text;
+
+            // Sort by start position descending to apply from end
+            const sorted = [...highlights].sort((a, b) => b.start - a.start);
+
+            let result = text;
+            for (const hl of sorted) {
+                const before = result.substring(0, hl.start);
+                const highlighted = result.substring(hl.start, hl.end);
+                const after = result.substring(hl.end);
+                result = `${before}<span class="hl-${hl.color}" data-hl-start="${hl.start}" data-hl-end="${hl.end}">${highlighted}</span>${after}`;
+            }
+            return result;
+        }
+
+        // Handle text selection
+        function handleSelection() {
+            const selection = window.getSelection();
+            if (!selection || selection.isCollapsed || selection.toString().trim() === '') {
+                highlightPopup.classList.remove('visible');
+                return;
+            }
+
+            const range = selection.getRangeAt(0);
+            const verseText = range.startContainer.parentElement.closest('.verse-text');
+
+            if (!verseText) {
+                highlightPopup.classList.remove('visible');
+                return;
+            }
+
+            // Get verse info
+            const chapter = verseText.dataset.chapter;
+            const verse = verseText.dataset.verse;
+
+            // Calculate offset within the verse text
+            const startOffset = getTextOffset(verseText, range.startContainer, range.startOffset);
+            const endOffset = getTextOffset(verseText, range.endContainer, range.endOffset);
+
+            state.selectedRange = { chapter, verse, start: startOffset, end: endOffset, text: selection.toString() };
+            state.selectedVerseId = `${chapter}:${verse}`;
+
+            // Position popup near selection
+            const rect = range.getBoundingClientRect();
+            const popupWidth = 220;
+            let left = rect.left + (rect.width / 2) - (popupWidth / 2);
+            left = Math.max(10, Math.min(left, window.innerWidth - popupWidth - 10));
+
+            highlightPopup.style.left = left + 'px';
+            highlightPopup.style.top = (rect.top - 50) + 'px';
+            highlightPopup.classList.add('visible');
+        }
+
+        // Get text offset within element (accounting for nested spans)
+        function getTextOffset(root, node, offset) {
+            let totalOffset = 0;
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+
+            while (walker.nextNode()) {
+                if (walker.currentNode === node) {
+                    return totalOffset + offset;
+                }
+                totalOffset += walker.currentNode.textContent.length;
+            }
+            return totalOffset + offset;
+        }
+
+        // Apply highlight
+        function applyHighlight(color) {
+            if (!state.selectedRange) return;
+
+            const { chapter, verse, start, end } = state.selectedRange;
+
+            if (!state.highlights[chapter]) {
+                state.highlights[chapter] = {};
+            }
+            if (!state.highlights[chapter][verse]) {
+                state.highlights[chapter][verse] = [];
+            }
+
+            if (color === 'clear') {
+                // Remove overlapping highlights
+                state.highlights[chapter][verse] = state.highlights[chapter][verse].filter(hl =>
+                    hl.end <= start || hl.start >= end
+                );
+            } else {
+                // Remove overlapping and add new
+                state.highlights[chapter][verse] = state.highlights[chapter][verse].filter(hl =>
+                    hl.end <= start || hl.start >= end
+                );
+                state.highlights[chapter][verse].push({ start, end, color });
+            }
+
+            scheduleSyncToGist(); // Save locally and schedule cloud sync
+            window.getSelection().removeAllRanges();
+            highlightPopup.classList.remove('visible');
+
+            // Re-render the verse
+            if (state.currentView === 'verses') {
+                navigateToChapter(state.currentChapter);
+            }
+
+            updateStats();
+            showToast(color === 'clear' ? 'Highlight removed' : `Highlighted ${color}`);
+        }
+
+        // Copy selected text with highlights formatted
+        function copyWithHighlights() {
+            const selection = window.getSelection();
+            if (!selection || selection.isCollapsed) {
+                showToast('Select text to copy');
+                return;
+            }
+
+            // Get all selected verses
+            const range = selection.getRangeAt(0);
+            const container = document.createElement('div');
+            container.appendChild(range.cloneContents());
+
+            // Find all verses in selection
+            let copyText = '';
+            const selectedVerses = mainContent.querySelectorAll('.verse');
+
+            selectedVerses.forEach(verse => {
+                if (!selection.containsNode(verse, true)) return;
+
+                const verseId = verse.dataset.verseId;
+                const verseTextEl = verse.querySelector('.verse-text');
+                if (!verseTextEl) return;
+
+                const [chapter, verseNum] = verseId.split(':');
+                const verseHighlights = state.highlights[chapter]?.[verseNum] || [];
+
+                // Get raw text and apply highlight markers
+                let text = '';
+                const rawText = verseTextEl.textContent;
+
+                // Sort highlights by position
+                const sorted = [...verseHighlights].sort((a, b) => a.start - b.start);
+
+                let lastEnd = 0;
+                for (const hl of sorted) {
+                    text += rawText.substring(lastEnd, hl.start);
+                    const marker = hl.color === 'red' ? '!!' : hl.color === 'orange' ? '^' : '@';
+                    text += `${marker}${rawText.substring(hl.start, hl.end)}${marker}`;
+                    lastEnd = hl.end;
+                }
+                text += rawText.substring(lastEnd);
+
+                copyText += `${verseId} ${text}\n\n`;
+            });
+
+            if (copyText.trim()) {
+                navigator.clipboard.writeText(copyText.trim()).then(() => {
+                    showToast('Copied to clipboard');
+                }).catch(() => {
+                    showToast('Copy failed');
+                });
+            }
+
+            window.getSelection().removeAllRanges();
+            highlightPopup.classList.remove('visible');
+        }
+
+        // Bookmark functions
+        function toggleBookmark(verseId) {
+            // Always open the modal - for new notes or editing existing ones
+            openBookmarkModal(verseId);
+        }
+
+        function openBookmarkModal(verseId) {
+            state.selectedVerseId = verseId;
+            document.getElementById('noteVerseRef').textContent = verseId;
+            document.getElementById('noteText').value = '';
+
+            const existing = state.bookmarks.find(b => b.location === verseId);
+            const deleteBtn = document.getElementById('deleteNote');
+            const modalTitle = noteModal.querySelector('.modal-header h3');
+
+            if (existing) {
+                document.getElementById('noteText').value = existing.note || '';
+                deleteBtn.style.display = 'block';
+                modalTitle.textContent = 'Edit Note';
+            } else {
+                deleteBtn.style.display = 'none';
+                modalTitle.textContent = 'Add Note';
+            }
+
+            noteModal.classList.add('visible');
+            document.getElementById('noteText').focus();
+        }
+
+        function saveBookmark() {
+            const note = document.getElementById('noteText').value.trim();
+            const verseId = state.selectedVerseId;
+
+            state.bookmarks = state.bookmarks.filter(b => b.location !== verseId);
+            state.bookmarks.push({ location: verseId, note, timestamp: Date.now() });
+
+            scheduleSyncToGist(); // Save locally and schedule cloud sync
+            noteModal.classList.remove('visible');
+            showToast('Note saved');
+            updateStats();
+
+            const icon = document.querySelector(`[data-verse-id="${verseId}"] .verse-bookmark`);
+            if (icon) icon.classList.add('active');
+        }
+
+        function renderBookmarks() {
+            const list = document.getElementById('bookmarksList');
+            if (state.bookmarks.length === 0) {
+                list.innerHTML = '<p style="padding: 16px; color: var(--text-secondary);">No notes yet.</p>';
+                return;
+            }
+
+            const sorted = [...state.bookmarks].sort((a, b) => b.timestamp - a.timestamp);
+            list.innerHTML = sorted.map(bookmark => `
+                <div class="bookmark-item">
+                    <span class="bookmark-delete" onclick="event.stopPropagation(); deleteBookmark('${bookmark.location}')">✕</span>
+                    <div class="bookmark-location" onclick="goToBookmark('${bookmark.location}')">${bookmark.location}</div>
+                    ${bookmark.note ? `<div class="bookmark-note">${bookmark.note}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function deleteBookmark(location) {
+            state.bookmarks = state.bookmarks.filter(b => b.location !== location);
+            scheduleSyncToGist(); // Save locally and schedule cloud sync
+            showToast('Note deleted');
+            updateStats();
+            renderBookmarks();
+        }
+
+        function deleteNoteFromModal() {
+            const verseId = state.selectedVerseId;
+            state.bookmarks = state.bookmarks.filter(b => b.location !== verseId);
+            scheduleSyncToGist();
+            noteModal.classList.remove('visible');
+            showToast('Note deleted');
+            updateStats();
+
+            // Update icon
+            const icon = document.querySelector(`[data-verse-id="${verseId}"] .verse-bookmark`);
+            if (icon) icon.classList.remove('active');
+        }
+
+        // Favorite functions
+        function toggleFavorite(verseId) {
+            const idx = state.favorites.indexOf(verseId);
+
+            if (idx >= 0) {
+                state.favorites.splice(idx, 1);
+                showToast('Removed from favorites');
+            } else {
+                state.favorites.push(verseId);
+                showToast('Added to favorites 💐');
+            }
+
+            scheduleSyncToGist(); // Save locally and schedule cloud sync
+            updateStats();
+
+            // Update icon
+            const icon = document.querySelector(`[data-verse-id="${verseId}"] .verse-favorite`);
+            if (icon) icon.classList.toggle('active');
+        }
+
+        async function goToBookmark(location) {
+            closeBookmarksPanel();
+            const [chapter, verse] = location.split(':');
+            const [book] = chapter.split('.');
+            state.currentBook = state.allBooks.find(b => b.number == book);
+            await navigateToChapter(chapter);
+
+            setTimeout(() => {
+                const el = document.querySelector(`[data-verse-id="${location}"]`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.style.boxShadow = '0 0 0 3px var(--accent)';
+                    setTimeout(() => el.style.boxShadow = '', 1500);
+                }
+            }, 100);
+        }
+
+        // Navigation
+        function updateBreadcrumb() {
+            let html = '<span onclick="renderBookList()">पर्वाणि</span>';
+            if (state.currentBook) {
+                html += ` › <span onclick="navigateToBook(${state.currentBook.number})">${state.currentBook.name}</span>`;
+            }
+            if (state.currentChapter) {
+                html += ` › <span>अध्यायः ${state.currentChapter}</span>`;
+            }
+            breadcrumb.innerHTML = html;
+        }
+
+        function updateChapterNavButtons() {
+            const chapters = state.allChapters;
+            const idx = chapters.findIndex(c => c.number === state.currentChapter);
+            document.getElementById('prevChapter').disabled = idx <= 0;
+            document.getElementById('nextChapter').disabled = idx >= chapters.length - 1;
+        }
+
+        function goToPrevChapter() {
+            const idx = state.allChapters.findIndex(c => c.number === state.currentChapter);
+            if (idx > 0) navigateToChapter(state.allChapters[idx - 1].number);
+        }
+
+        function goToNextChapter() {
+            const idx = state.allChapters.findIndex(c => c.number === state.currentChapter);
+            if (idx < state.allChapters.length - 1) navigateToChapter(state.allChapters[idx + 1].number);
+        }
+
+        // Settings
+        function applySettings() {
+            applyFontSize();
+            document.getElementById('fontSizeDisplay').textContent = state.fontSize;
+        }
+
+        function applyFontSize() {
+            document.querySelectorAll('.verse-text').forEach(el => {
+                el.style.fontSize = state.fontSize + 'px';
+            });
+        }
+
+        function changeFontSize(delta) {
+            state.fontSize = Math.max(14, Math.min(32, state.fontSize + delta));
+            localStorage.setItem('mb_fontSize', state.fontSize);
+            document.getElementById('fontSizeDisplay').textContent = state.fontSize;
+            applyFontSize();
+        }
+
+        // Stats
+        function updateStats() {
+            let green = 0, orange = 0, red = 0;
+            Object.values(state.highlights).forEach(chapter => {
+                Object.values(chapter).forEach(verse => {
+                    verse.forEach(hl => {
+                        if (hl.color === 'green') green++;
+                        else if (hl.color === 'orange') orange++;
+                        else if (hl.color === 'red') red++;
+                    });
+                });
+            });
+            document.getElementById('greenCount').textContent = green;
+            document.getElementById('orangeCount').textContent = orange;
+            document.getElementById('redCount').textContent = red;
+            document.getElementById('bookmarkCount').textContent = state.bookmarks.length;
+            document.getElementById('favoriteCount').textContent = state.favorites.length;
+        }
+
+        // Recent chapters
+        function addToRecentChapters(chapterNum) {
+            const MAX_RECENT = 8;
+
+            // Remove if already in list
+            state.recentChapters = state.recentChapters.filter(r => r.chapter !== chapterNum);
+
+            // Get book name
+            const [bookNum] = chapterNum.split('.');
+            const book = state.allBooks.find(b => b.number == bookNum);
+            const bookName = book ? book.name : `पर्व ${bookNum}`;
+
+            // Add to beginning
+            state.recentChapters.unshift({
+                chapter: chapterNum,
+                bookName: bookName,
+                timestamp: Date.now()
+            });
+
+            // Keep only MAX_RECENT
+            if (state.recentChapters.length > MAX_RECENT) {
+                state.recentChapters = state.recentChapters.slice(0, MAX_RECENT);
+            }
+
+            // Save to localStorage
+            localStorage.setItem('mb_recent_chapters', JSON.stringify(state.recentChapters));
+
+            // Update UI
+            renderRecentChapters();
+        }
+
+        function renderRecentChapters() {
+            const container = document.getElementById('recentChapters');
+
+            if (state.recentChapters.length === 0) {
+                container.innerHTML = '<p class="recent-empty">No chapters viewed yet</p>';
+                return;
+            }
+
+            container.innerHTML = state.recentChapters.map(item => {
+                const timeAgo = getTimeAgo(item.timestamp);
+                return `
+                    <div class="recent-chapter-item" onclick="goToRecentChapter('${item.chapter}')">
+                        <div class="recent-chapter-info">
+                            <span class="recent-chapter-num">अध्यायः ${item.chapter}</span>
+                            <span class="recent-chapter-book">${item.bookName}</span>
+                        </div>
+                        <span class="recent-chapter-time">${timeAgo}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+            return new Date(timestamp).toLocaleDateString();
+        }
+
+        async function goToRecentChapter(chapterNum) {
+            closeSidebar();
+            const [bookNum] = chapterNum.split('.');
+            state.currentBook = state.allBooks.find(b => b.number == bookNum);
+            await navigateToChapter(chapterNum);
+        }
+
+        // UI helpers
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 2000);
+        }
+
+        function openSidebar() {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('visible');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('visible');
+        }
+
+        function openBookmarksPanel() {
+            renderBookmarks();
+            bookmarksPanel.classList.add('open');
+            bookmarkOverlay.classList.add('visible');
+        }
+
+        function closeBookmarksPanel() {
+            bookmarksPanel.classList.remove('open');
+            bookmarkOverlay.classList.remove('visible');
+        }
+
+        // Event listeners
+        function setupEventListeners() {
+            // Text selection
+            document.addEventListener('mouseup', handleSelection);
+            document.addEventListener('touchend', () => setTimeout(handleSelection, 100));
+
+            // Header
+            document.getElementById('menuBtn').addEventListener('click', openSidebar);
+            document.getElementById('homeBtn').addEventListener('click', renderBookList);
+            document.getElementById('bookmarksBtn').addEventListener('click', openBookmarksPanel);
+
+            // Sidebar
+            document.getElementById('closeSidebar').addEventListener('click', closeSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
+
+            // Bookmarks
+            document.getElementById('closeBookmarks').addEventListener('click', closeBookmarksPanel);
+            bookmarkOverlay.addEventListener('click', closeBookmarksPanel);
+
+            // Modal
+            document.getElementById('closeModal').addEventListener('click', () => noteModal.classList.remove('visible'));
+            document.getElementById('cancelNote').addEventListener('click', () => noteModal.classList.remove('visible'));
+            document.getElementById('saveNote').addEventListener('click', saveBookmark);
+            document.getElementById('deleteNote').addEventListener('click', deleteNoteFromModal);
+
+            // Highlight buttons
+            document.querySelectorAll('.color-btn[data-color]').forEach(btn => {
+                btn.addEventListener('click', () => applyHighlight(btn.dataset.color));
+            });
+            document.getElementById('copyBtn').addEventListener('click', copyWithHighlights);
+
+            // Chapter nav
+            document.getElementById('prevChapter').addEventListener('click', goToPrevChapter);
+            document.getElementById('nextChapter').addEventListener('click', goToNextChapter);
+
+            // Bottom nav
+            document.getElementById('navRead').addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('navRead').classList.add('active');
+                renderBookList();
+            });
+            document.getElementById('navBookmarks').addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('navBookmarks').classList.add('active');
+                openBookmarksPanel();
+            });
+
+            // Settings
+            document.getElementById('fontIncrease').addEventListener('click', () => changeFontSize(2));
+            document.getElementById('fontDecrease').addEventListener('click', () => changeFontSize(-2));
+
+            // Swipe
+            let touchStartX = 0;
+            mainContent.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+            mainContent.addEventListener('touchend', e => {
+                if (state.currentView !== 'verses') return;
+                const diff = touchStartX - e.changedTouches[0].screenX;
+                if (Math.abs(diff) > 100) {
+                    if (diff > 0) goToNextChapter();
+                    else goToPrevChapter();
+                }
+            });
+
+            // Keyboard
+            document.addEventListener('keydown', e => {
+                if (state.currentView === 'verses') {
+                    if (e.key === 'ArrowLeft') goToPrevChapter();
+                    if (e.key === 'ArrowRight') goToNextChapter();
+                }
+                if (e.key === 'Escape') {
+                    closeSidebar();
+                    closeBookmarksPanel();
+                    noteModal.classList.remove('visible');
+                    highlightPopup.classList.remove('visible');
+                }
+            });
+
+            // Hide popup on scroll
+            mainContent.addEventListener('scroll', () => {
+                highlightPopup.classList.remove('visible');
+            });
+        }
+
+        // ==================== GITHUB GIST SYNC ====================
+
+        // Update sync UI
+        function updateSyncUI() {
+            const dot = document.getElementById('syncDot');
+            const text = document.getElementById('syncStatusText');
+            const setup = document.getElementById('syncSetup');
+            const connected = document.getElementById('syncConnected');
+            const lastSyncInfo = document.getElementById('lastSyncInfo');
+
+            // Check online status
+            const isOnline = navigator.onLine;
+
+            if (!syncState.token) {
+                dot.className = 'sync-dot';
+                text.textContent = 'Not configured';
+                setup.style.display = 'block';
+                connected.style.display = 'none';
+                return;
+            }
+
+            setup.style.display = 'none';
+            connected.style.display = 'block';
+
+            if (!isOnline) {
+                dot.className = 'sync-dot offline';
+                text.textContent = 'Offline (changes saved locally)';
+            } else if (syncState.status === 'syncing') {
+                dot.className = 'sync-dot syncing';
+                text.textContent = 'Syncing...';
+            } else if (syncState.status === 'error') {
+                dot.className = 'sync-dot error';
+                text.textContent = 'Sync error';
+            } else if (syncState.pendingSync) {
+                dot.className = 'sync-dot syncing';
+                text.textContent = 'Changes pending...';
+            } else {
+                dot.className = 'sync-dot synced';
+                text.textContent = 'Synced';
+            }
+
+            if (syncState.lastSync) {
+                const date = new Date(parseInt(syncState.lastSync));
+                lastSyncInfo.textContent = `Last synced: ${date.toLocaleString()}`;
+            } else {
+                lastSyncInfo.textContent = '';
+            }
+        }
+
+        // Connect to GitHub
+        async function connectGitHub() {
+            const tokenInput = document.getElementById('githubToken');
+            const token = tokenInput.value.trim();
+
+            if (!token) {
+                showToast('Please enter a GitHub token');
+                return;
+            }
+
+            // Test the token
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Invalid token');
+                }
+
+                // Token is valid, save it
+                syncState.token = token;
+                localStorage.setItem('mb_github_token', token);
+
+                // Check if we have an existing gist or create new one
+                await findOrCreateGist();
+
+                showToast('Connected to GitHub!');
+                updateSyncUI();
+
+                // Do initial sync
+                await syncToGist();
+
+            } catch (error) {
+                console.error('GitHub connection error:', error);
+                showToast('Failed to connect: ' + error.message);
+            }
+        }
+
+        // Find existing gist or create new one
+        async function findOrCreateGist() {
+            // First, check if we have a stored gist ID and it still exists
+            if (syncState.gistId) {
+                try {
+                    const response = await fetch(`https://api.github.com/gists/${syncState.gistId}`, {
+                        headers: { 'Authorization': `token ${syncState.token}` }
+                    });
+                    if (response.ok) {
+                        return; // Gist exists, we're good
+                    }
+                } catch (e) {
+                    // Gist doesn't exist anymore, will create new one
+                }
+            }
+
+            // Search for existing Mahabharata gist
+            try {
+                const response = await fetch('https://api.github.com/gists', {
+                    headers: { 'Authorization': `token ${syncState.token}` }
+                });
+                const gists = await response.json();
+
+                const existingGist = gists.find(g =>
+                    g.description === 'Mahabharata Reader - Sync Data' &&
+                    g.files['mahabharata_data.json']
+                );
+
+                if (existingGist) {
+                    syncState.gistId = existingGist.id;
+                    localStorage.setItem('mb_gist_id', existingGist.id);
+
+                    // Load data from gist
+                    await loadFromGist();
+                    return;
+                }
+            } catch (e) {
+                console.error('Error searching gists:', e);
+            }
+
+            // Create new gist
+            await createGist();
+        }
+
+        // Generate human-readable content for gist
+        async function generateHumanReadableContent() {
+            const lines = [];
+
+            // Header comment explaining notation
+            lines.push(`# ॥ महाभारतम् ॥ - Mahabharata Reading Notes`);
+            lines.push(`#`);
+            lines.push(`# This file contains highlights, bookmarks, and favorites from the Mahabharata Reader app.`);
+            lines.push(`#`);
+            lines.push(`# NOTATION:`);
+            lines.push(`#   @text@     = Green highlight (important/good)`);
+            lines.push(`#   ^text^     = Orange highlight (notable/question)`);
+            lines.push(`#   !!text!!   = Red highlight (critical/warning)`);
+            lines.push(`#   💐         = Favorite verse`);
+            lines.push(`#   🔖         = Bookmarked verse`);
+            lines.push(`#`);
+            lines.push(`# Last updated: ${new Date().toLocaleString()}`);
+            lines.push(`#`);
+            lines.push(``);
+
+            // Collect all verses that have highlights, bookmarks, or favorites
+            const verseRefs = new Set();
+
+            // From highlights
+            Object.keys(state.highlights).forEach(chapter => {
+                Object.keys(state.highlights[chapter]).forEach(verse => {
+                    if (state.highlights[chapter][verse].length > 0) {
+                        verseRefs.add(`${chapter}:${verse}`);
+                    }
+                });
+            });
+
+            // From bookmarks
+            state.bookmarks.forEach(b => verseRefs.add(b.location));
+
+            // From favorites
+            state.favorites.forEach(f => verseRefs.add(f));
+
+            // Sort verse references
+            const sortedRefs = Array.from(verseRefs).sort((a, b) => {
+                const [aChap, aVerse] = a.split(':');
+                const [bChap, bVerse] = b.split(':');
+                const [aBook, aChapNum] = aChap.split('.').map(Number);
+                const [bBook, bChapNum] = bChap.split('.').map(Number);
+                if (aBook !== bBook) return aBook - bBook;
+                if (aChapNum !== bChapNum) return aChapNum - bChapNum;
+                return parseInt(aVerse) - parseInt(bVerse);
+            });
+
+            // Group by chapter
+            let currentChapter = null;
+
+            for (const ref of sortedRefs) {
+                const [chapter, verseNum] = ref.split(':');
+
+                // Chapter header
+                if (chapter !== currentChapter) {
+                    if (currentChapter !== null) lines.push(``);
+                    lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+                    lines.push(`अध्यायः ${chapter}`);
+                    lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+                    lines.push(``);
+                    currentChapter = chapter;
+                }
+
+                // Get verse text
+                let verseText = await getVerseText(chapter, verseNum);
+                if (!verseText) continue;
+
+                // Check if favorite or bookmarked
+                const isFavorite = state.favorites.includes(ref);
+                const bookmark = state.bookmarks.find(b => b.location === ref);
+
+                // Apply highlight markup to verse text
+                const highlights = state.highlights[chapter]?.[verseNum] || [];
+                if (highlights.length > 0) {
+                    const sorted = [...highlights].sort((a, b) => b.start - a.start);
+                    for (const hl of sorted) {
+                        const before = verseText.substring(0, hl.start);
+                        const highlighted = verseText.substring(hl.start, hl.end);
+                        const after = verseText.substring(hl.end);
+                        const marker = hl.color === 'red' ? '!!' : hl.color === 'orange' ? '^' : '@';
+                        verseText = `${before}${marker}${highlighted}${marker}${after}`;
+                    }
+                }
+
+                // Build verse line with icons
+                let icons = '';
+                if (isFavorite) icons += '💐 ';
+                if (bookmark) icons += '🔖 ';
+
+                lines.push(`${icons}${chapter}.${verseNum}`);
+                lines.push(verseText);
+
+                // Add bookmark note if present
+                if (bookmark && bookmark.note) {
+                    lines.push(`   📝 Note: ${bookmark.note}`);
+                }
+
+                lines.push(``);
+            }
+
+            // If no content, add a placeholder
+            if (sortedRefs.length === 0) {
+                lines.push(`No highlights, bookmarks, or favorites yet.`);
+                lines.push(`Start reading and marking verses in the app!`);
+            }
+
+            return lines.join('\n');
+        }
+
+        // Helper to get verse text from loaded data
+        async function getVerseText(chapter, verseNum) {
+            const fileIndex = getFileForChapter(chapter);
+            const data = await loadDataFile(fileIndex);
+            if (!data) return null;
+
+            const verse = data.find(v => v.c === chapter && String(v.n) === String(verseNum));
+            return verse?.v || null;
+        }
+
+        // Create a new gist
+        async function createGist() {
+            const jsonData = {
+                highlights: state.highlights,
+                bookmarks: state.bookmarks,
+                favorites: state.favorites,
+                lastModified: Date.now()
+            };
+
+            const humanReadable = await generateHumanReadableContent();
+
+            try {
+                const response = await fetch('https://api.github.com/gists', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${syncState.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: 'Mahabharata Reader - Sync Data',
+                        public: false,
+                        files: {
+                            'mahabharata_data.json': {
+                                content: JSON.stringify(jsonData, null, 2)
+                            },
+                            'mahabharata_notes.txt': {
+                                content: humanReadable
+                            }
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create gist');
+                }
+
+                const gist = await response.json();
+                syncState.gistId = gist.id;
+                localStorage.setItem('mb_gist_id', gist.id);
+                syncState.lastSync = Date.now().toString();
+                localStorage.setItem('mb_last_sync', syncState.lastSync);
+
+            } catch (error) {
+                console.error('Error creating gist:', error);
+                throw error;
+            }
+        }
+
+        // Load data from gist
+        async function loadFromGist() {
+            if (!syncState.token || !syncState.gistId) return;
+
+            try {
+                const response = await fetch(`https://api.github.com/gists/${syncState.gistId}`, {
+                    headers: { 'Authorization': `token ${syncState.token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load gist');
+                }
+
+                const gist = await response.json();
+                const content = gist.files['mahabharata_data.json']?.content;
+
+                if (content) {
+                    const data = JSON.parse(content);
+
+                    // Merge or replace local data
+                    // For simplicity, we'll use the most recent data
+                    const localModified = Math.max(
+                        ...state.bookmarks.map(b => b.timestamp || 0),
+                        parseInt(localStorage.getItem('mb_last_local_change') || '0')
+                    );
+
+                    if (data.lastModified > localModified) {
+                        // Remote is newer, use it
+                        state.highlights = data.highlights || {};
+                        state.bookmarks = data.bookmarks || [];
+                        state.favorites = data.favorites || [];
+
+                        // Save to localStorage
+                        localStorage.setItem('mb_highlights2', JSON.stringify(state.highlights));
+                        localStorage.setItem('mb_bookmarks', JSON.stringify(state.bookmarks));
+                        localStorage.setItem('mb_favorites', JSON.stringify(state.favorites));
+
+                        updateStats();
+                        if (state.currentView === 'verses') {
+                            navigateToChapter(state.currentChapter);
+                        }
+
+                        showToast('Data loaded from cloud');
+                    }
+
+                    syncState.lastSync = Date.now().toString();
+                    localStorage.setItem('mb_last_sync', syncState.lastSync);
+                }
+
+            } catch (error) {
+                console.error('Error loading from gist:', error);
+            }
+        }
+
+        // Sync to gist (debounced)
+        function scheduleSyncToGist() {
+            // Always save locally first
+            localStorage.setItem('mb_highlights2', JSON.stringify(state.highlights));
+            localStorage.setItem('mb_bookmarks', JSON.stringify(state.bookmarks));
+            localStorage.setItem('mb_favorites', JSON.stringify(state.favorites));
+            localStorage.setItem('mb_last_local_change', Date.now().toString());
+
+            if (!syncState.token || !syncState.gistId) return;
+
+            syncState.pendingSync = true;
+            updateSyncUI();
+
+            // Clear existing timer
+            if (syncState.debounceTimer) {
+                clearTimeout(syncState.debounceTimer);
+            }
+
+            // Set new timer
+            syncState.debounceTimer = setTimeout(() => {
+                syncToGist();
+            }, syncState.DEBOUNCE_DELAY);
+        }
+
+        // Actually sync to gist
+        async function syncToGist() {
+            if (!syncState.token || !syncState.gistId) return;
+
+            if (!navigator.onLine) {
+                syncState.pendingSync = true;
+                updateSyncUI();
+                return;
+            }
+
+            syncState.status = 'syncing';
+            updateSyncUI();
+
+            const jsonData = {
+                highlights: state.highlights,
+                bookmarks: state.bookmarks,
+                favorites: state.favorites,
+                lastModified: Date.now()
+            };
+
+            const humanReadable = await generateHumanReadableContent();
+
+            try {
+                const response = await fetch(`https://api.github.com/gists/${syncState.gistId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${syncState.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            'mahabharata_data.json': {
+                                content: JSON.stringify(jsonData, null, 2)
+                            },
+                            'mahabharata_notes.txt': {
+                                content: humanReadable
+                            }
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to sync');
+                }
+
+                syncState.status = 'synced';
+                syncState.pendingSync = false;
+                syncState.lastSync = Date.now().toString();
+                localStorage.setItem('mb_last_sync', syncState.lastSync);
+
+            } catch (error) {
+                console.error('Sync error:', error);
+                syncState.status = 'error';
+                syncState.pendingSync = true; // Keep pending for retry
+            }
+
+            updateSyncUI();
+        }
+
+        // Disconnect sync
+        function disconnectSync() {
+            syncState.token = null;
+            syncState.gistId = null;
+            syncState.lastSync = null;
+            syncState.status = 'idle';
+            syncState.pendingSync = false;
+
+            localStorage.removeItem('mb_github_token');
+            localStorage.removeItem('mb_gist_id');
+            localStorage.removeItem('mb_last_sync');
+
+            document.getElementById('githubToken').value = '';
+
+            showToast('Disconnected from GitHub');
+            updateSyncUI();
+        }
+
+        // Listen for online/offline events
+        window.addEventListener('online', () => {
+            updateSyncUI();
+            if (syncState.pendingSync) {
+                syncToGist();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            updateSyncUI();
+        });
+
+        // Setup sync event listeners
+        function setupSyncListeners() {
+            document.getElementById('connectGithub').addEventListener('click', connectGitHub);
+            document.getElementById('syncNow').addEventListener('click', async () => {
+                await loadFromGist(); // First pull
+                await syncToGist();   // Then push
+            });
+            document.getElementById('disconnectSync').addEventListener('click', disconnectSync);
+
+            // Allow Enter key in token input
+            document.getElementById('githubToken').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') connectGitHub();
+            });
+
+            // Initial UI update
+            updateSyncUI();
+
+            // If connected, do initial sync
+            if (syncState.token && syncState.gistId) {
+                loadFromGist();
+            }
+        }
+
+        // ==================== END SYNC ====================
+
+        // Global functions
+        window.navigateToBook = navigateToBook;
+        window.navigateToChapter = navigateToChapter;
+        window.toggleBookmark = toggleBookmark;
+        window.toggleFavorite = toggleFavorite;
+        window.goToBookmark = goToBookmark;
+        window.deleteBookmark = deleteBookmark;
+        window.goToRecentChapter = goToRecentChapter;
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
