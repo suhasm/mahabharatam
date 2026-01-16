@@ -1516,7 +1516,20 @@
             left = Math.max(10, Math.min(left, window.innerWidth - popupWidth - 10));
 
             highlightPopup.style.left = left + 'px';
-            highlightPopup.style.top = (rect.top - 50) + 'px';
+            // Position below selection on mobile (Android native menu appears above)
+            // On desktop, position above if there's room, otherwise below
+            const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const popupHeight = 50;
+            const spaceAbove = rect.top;
+            const spaceBelow = window.innerHeight - rect.bottom;
+
+            if (isMobile || spaceAbove < popupHeight + 20) {
+                // Position below the selection
+                highlightPopup.style.top = (rect.bottom + 10) + 'px';
+            } else {
+                // Position above the selection (desktop default)
+                highlightPopup.style.top = (rect.top - popupHeight) + 'px';
+            }
             highlightPopup.classList.add('visible');
         }
 
