@@ -20,10 +20,10 @@
             --accent-glow: rgba(201, 162, 39, 0.15);
             --accent-hover: #ddb530;
             --border: rgba(255,255,255,0.06);
-            /* Colorblind-friendly highlight colors */
-            --highlight-green: rgba(6, 182, 212, 0.3);    /* Cyan/Teal */
-            --highlight-orange: rgba(245, 158, 11, 0.35); /* Yellow/Amber */
-            --highlight-red: rgba(236, 72, 153, 0.3);     /* Magenta/Pink */
+            /* Semantic highlight colors (colorblind-friendly) */
+            --highlight-green: rgba(59, 130, 246, 0.3);   /* Blue - interesting */
+            --highlight-orange: rgba(234, 179, 8, 0.35);  /* Yellow - need to think */
+            --highlight-red: rgba(239, 68, 68, 0.35);     /* Red - makes no sense */
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
             --shadow-md: 0 8px 30px rgba(0,0,0,0.4);
             --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
@@ -343,9 +343,9 @@
             transform: scale(0.95);
         }
 
-        .color-btn.green { background: #06b6d4; }  /* Cyan */
-        .color-btn.orange { background: #f59e0b; } /* Amber */
-        .color-btn.red { background: #ec4899; }    /* Pink */
+        .color-btn.green { background: #3b82f6; }  /* Blue - interesting */
+        .color-btn.orange { background: #eab308; } /* Yellow - need to think */
+        .color-btn.red { background: #ef4444; }    /* Red - makes no sense */
         .color-btn.clear {
             background: var(--bg-tertiary);
             color: var(--text-secondary);
@@ -773,9 +773,9 @@
             border-radius: 50%;
         }
 
-        .highlight-dot.green { background: #06b6d4; }  /* Cyan */
-        .highlight-dot.orange { background: #f59e0b; } /* Amber */
-        .highlight-dot.red { background: #ec4899; }    /* Pink */
+        .highlight-dot.green { background: #3b82f6; }  /* Blue - interesting */
+        .highlight-dot.orange { background: #eab308; } /* Yellow - need to think */
+        .highlight-dot.red { background: #ef4444; }    /* Red - makes no sense */
 
         /* Toast notification */
         .toast {
