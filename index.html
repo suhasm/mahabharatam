@@ -980,6 +980,7 @@
             font-size: 24px;
             opacity: 0;
             transition: opacity 0.15s ease;
+            pointer-events: none;
         }
 
         .swipe-indicator.left {
@@ -1008,6 +1009,51 @@
             pointer-events: none;
             display: flex;
             gap: 4px;
+        }
+
+        /* Desktop action icons (visible on hover) */
+        .verse-actions {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            gap: 8px;
+            z-index: 5;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .verse-wrapper:hover .verse-actions {
+                display: flex;
+            }
+            .verse-wrapper:hover .verse-status {
+                display: none;
+            }
+        }
+
+        .verse-action-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            opacity: 0.7;
+        }
+
+        .verse-action-icon:hover {
+            opacity: 1;
+            background: var(--accent);
+        }
+
+        .verse-action-icon.active {
+            opacity: 1;
+            background: var(--accent);
         }
 
         /* Inline note editor */
@@ -1758,15 +1804,19 @@
                             <div class="swipe-indicator right">💐</div>
                             <div class="verse">
                                 ${statusIcons ? `<span class="verse-status">${statusIcons}</span>` : ''}
+                                <div class="verse-actions">
+                                    <button class="verse-action-icon${isBookmarked ? ' active' : ''}" data-action="note" data-verse-id="${fullVerseId}" title="Add note">📝</button>
+                                    <button class="verse-action-icon${isFavorite ? ' active' : ''}" data-action="favorite" data-verse-id="${fullVerseId}" title="Toggle favorite">💐</button>
+                                </div>
                                 <span class="verse-number">${verse.c}.${verseId}</span>
                                 <span class="verse-text" data-chapter="${chapterNum}" data-verse="${verseId}">${highlightedText}</span>
                             </div>
                             <div class="verse-inline-note" id="note-${fullVerseId.replace(':', '-')}">
                                 <textarea placeholder="Add a note...">${existingNote}</textarea>
                                 <div class="verse-inline-note-actions">
-                                    ${isBookmarked ? `<button class="delete-btn" onclick="deleteInlineNote('${fullVerseId}')">Delete</button>` : ''}
-                                    <button class="cancel-btn" onclick="closeInlineNote('${fullVerseId}')">Cancel</button>
-                                    <button class="save-btn" onclick="saveInlineNote('${fullVerseId}')">Save</button>
+                                    ${isBookmarked ? `<button class="delete-btn" data-action="delete-note" data-verse-id="${fullVerseId}">Delete</button>` : ''}
+                                    <button class="cancel-btn" data-action="cancel-note" data-verse-id="${fullVerseId}">Cancel</button>
+                                    <button class="save-btn" data-action="save-note" data-verse-id="${fullVerseId}">Save</button>
                                 </div>
                             </div>
                         </div>
@@ -2584,6 +2634,12 @@
             } else if (statusEl) {
                 statusEl.remove();
             }
+
+            // Update desktop action icons
+            const noteBtn = wrapper.querySelector('[data-action="note"]');
+            const favBtn = wrapper.querySelector('[data-action="favorite"]');
+            if (noteBtn) noteBtn.classList.toggle('active', isBookmarked);
+            if (favBtn) favBtn.classList.toggle('active', isFavorite);
         }
 
         // Swipe feedback
@@ -2786,6 +2842,41 @@
 
             // Verse swipe handling
             setupVerseSwipe();
+
+            // Event delegation for verse actions (desktop icons and inline note buttons)
+            mainContent.addEventListener('click', e => {
+                const actionBtn = e.target.closest('[data-action]');
+                if (!actionBtn) return;
+
+                const action = actionBtn.dataset.action;
+                const verseId = actionBtn.dataset.verseId;
+                if (!verseId) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                switch (action) {
+                    case 'note':
+                        openInlineNote(verseId);
+                        break;
+                    case 'favorite':
+                        toggleFavorite(verseId);
+                        updateVerseStatusIcons(verseId);
+                        // Update the button state
+                        const isFav = state.favorites.includes(verseId);
+                        actionBtn.classList.toggle('active', isFav);
+                        break;
+                    case 'save-note':
+                        saveInlineNote(verseId);
+                        break;
+                    case 'cancel-note':
+                        closeInlineNote(verseId);
+                        break;
+                    case 'delete-note':
+                        deleteInlineNote(verseId);
+                        break;
+                }
+            });
 
             // Keyboard
             document.addEventListener('keydown', e => {
