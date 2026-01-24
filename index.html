@@ -1833,6 +1833,9 @@
                 mainContent.innerHTML = html;
                 mainContent.scrollTop = 0;
                 applyFontSize();
+
+                // Track initial reading position after content renders
+                setTimeout(() => updateReadingPosition(), 100);
             } catch (error) {
                 console.error('Error:', error);
                 mainContent.innerHTML = `<div class="loading">Error: ${error.message}</div>`;
@@ -2450,7 +2453,7 @@
 
         function getVisibleVerseId() {
             // Find the verse that's currently most visible in the viewport
-            const verses = document.querySelectorAll('.verse-wrapper');
+            const verses = document.querySelectorAll('.verse-wrapper[data-verse-id]');
             if (verses.length === 0) return null;
 
             const containerRect = mainContent.getBoundingClientRect();
@@ -2470,7 +2473,7 @@
                 }
             });
 
-            return closestVerse ? closestVerse.dataset.verseId : null;
+            return closestVerse ? closestVerse.getAttribute('data-verse-id') : null;
         }
 
         function updateReadingPosition() {
