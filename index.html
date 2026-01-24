@@ -1835,7 +1835,7 @@
                 applyFontSize();
 
                 // Track initial reading position after content renders
-                setTimeout(() => updateReadingPosition(), 100);
+                setTimeout(() => updateReadingPosition(), 300);
             } catch (error) {
                 console.error('Error:', error);
                 mainContent.innerHTML = `<div class="loading">Error: ${error.message}</div>`;
@@ -2452,28 +2452,27 @@
         let scrollTrackingTimer = null;
 
         function getVisibleVerseId() {
-            // Find the verse that's currently most visible in the viewport
+            // Find the first verse that's visible in the viewport
             const verses = document.querySelectorAll('.verse-wrapper[data-verse-id]');
             if (verses.length === 0) return null;
 
-            const containerRect = mainContent.getBoundingClientRect();
-            const viewportMiddle = containerRect.top + containerRect.height / 3; // Focus on upper third
-
-            let closestVerse = null;
-            let closestDistance = Infinity;
-
-            verses.forEach(verse => {
+            // Find first verse whose top is in the visible area
+            for (const verse of verses) {
                 const rect = verse.getBoundingClientRect();
-                const verseMiddle = rect.top + rect.height / 2;
-                const distance = Math.abs(verseMiddle - viewportMiddle);
-
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestVerse = verse;
+                // Verse is visible if its top is within the viewport
+                if (rect.top >= 0 && rect.top < window.innerHeight) {
+                    return verse.getAttribute('data-verse-id');
                 }
-            });
+            }
 
-            return closestVerse ? closestVerse.getAttribute('data-verse-id') : null;
+            // If scrolled past all verses, return the last one
+            // If at the very top, return the first one
+            const firstRect = verses[0].getBoundingClientRect();
+            if (firstRect.top > 0) {
+                return verses[0].getAttribute('data-verse-id');
+            }
+
+            return verses[verses.length - 1].getAttribute('data-verse-id');
         }
 
         function updateReadingPosition() {
