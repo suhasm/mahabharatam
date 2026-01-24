@@ -1364,6 +1364,12 @@
             color: var(--text-muted);
         }
 
+        .recent-chapter-verse {
+            font-size: 10px;
+            color: var(--accent);
+            font-style: italic;
+        }
+
         .recent-chapter-time {
             font-size: 11px;
             color: var(--text-muted);
@@ -2439,7 +2445,55 @@
             document.getElementById('chapterFavoriteCount').textContent = state.chapterFavorites.length;
         }
 
-        // Recent chapters
+        // Recent chapters with reading position tracking
+        let scrollTrackingTimer = null;
+
+        function getVisibleVerseId() {
+            // Find the verse that's currently most visible in the viewport
+            const verses = document.querySelectorAll('.verse-wrapper');
+            if (verses.length === 0) return null;
+
+            const containerRect = mainContent.getBoundingClientRect();
+            const viewportMiddle = containerRect.top + containerRect.height / 3; // Focus on upper third
+
+            let closestVerse = null;
+            let closestDistance = Infinity;
+
+            verses.forEach(verse => {
+                const rect = verse.getBoundingClientRect();
+                const verseMiddle = rect.top + rect.height / 2;
+                const distance = Math.abs(verseMiddle - viewportMiddle);
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestVerse = verse;
+                }
+            });
+
+            return closestVerse ? closestVerse.dataset.verseId : null;
+        }
+
+        function updateReadingPosition() {
+            if (state.currentView !== 'verses' || !state.currentChapter) return;
+
+            const verseId = getVisibleVerseId();
+            if (!verseId) return;
+
+            // Find and update the current chapter in recent list
+            const recentEntry = state.recentChapters.find(r => r.chapter === state.currentChapter);
+            if (recentEntry) {
+                recentEntry.lastVerseId = verseId;
+                recentEntry.timestamp = Date.now();
+                localStorage.setItem('mb_recent_chapters', JSON.stringify(state.recentChapters));
+            }
+        }
+
+        function trackScrollPosition() {
+            // Debounce scroll tracking to avoid excessive updates
+            if (scrollTrackingTimer) clearTimeout(scrollTrackingTimer);
+            scrollTrackingTimer = setTimeout(updateReadingPosition, 500);
+        }
+
         function addToRecentChapters(chapterNum) {
             const MAX_RECENT = 8;
 
@@ -2451,11 +2505,12 @@
             const book = state.allBooks.find(b => b.number == bookNum);
             const bookName = book ? book.name : `पर्व ${bookNum}`;
 
-            // Add to beginning
+            // Add to beginning with reading position
             state.recentChapters.unshift({
                 chapter: chapterNum,
                 bookName: bookName,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                lastVerseId: null // Will be updated as user scrolls
             });
 
             // Keep only MAX_RECENT
@@ -2480,11 +2535,14 @@
 
             container.innerHTML = state.recentChapters.map(item => {
                 const timeAgo = getTimeAgo(item.timestamp);
+                // Show which verse they were reading
+                const verseInfo = item.lastVerseId ? `श्लोक ${item.lastVerseId.split(':')[1]}` : 'आरम्भ';
                 return `
                     <div class="recent-chapter-item" onclick="goToRecentChapter('${item.chapter}')">
                         <div class="recent-chapter-info">
                             <span class="recent-chapter-num">अध्यायः ${item.chapter}</span>
                             <span class="recent-chapter-book">${item.bookName}</span>
+                            <span class="recent-chapter-verse">${verseInfo}</span>
                         </div>
                         <span class="recent-chapter-time">${timeAgo}</span>
                     </div>
@@ -2506,7 +2564,22 @@
             closeSidebar();
             const [bookNum] = chapterNum.split('.');
             state.currentBook = state.allBooks.find(b => b.number == bookNum);
+
+            // Find the saved reading position
+            const recentEntry = state.recentChapters.find(r => r.chapter === chapterNum);
+            const savedVerseId = recentEntry?.lastVerseId;
+
             await navigateToChapter(chapterNum);
+
+            // Scroll to saved position after content loads
+            if (savedVerseId) {
+                setTimeout(() => {
+                    const verseElement = document.querySelector(`.verse-wrapper[data-verse-id="${savedVerseId}"]`);
+                    if (verseElement) {
+                        verseElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+            }
         }
 
         // UI helpers
@@ -2892,9 +2965,10 @@
                 }
             });
 
-            // Hide popup on scroll
+            // Hide popup on scroll and track reading position
             mainContent.addEventListener('scroll', () => {
                 highlightPopup.classList.remove('visible');
+                trackScrollPosition();
             });
         }
 
